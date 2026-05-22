@@ -13,12 +13,14 @@ public class DeathEffect : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private Color mauGoc;
     private PlayerController playerController;
+    private Rigidbody2D rb;
 
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         mauGoc = spriteRenderer.color;
         playerController = GetComponent<PlayerController>();
+        rb = GetComponent<Rigidbody2D>();
     }
 
     public void KichHoatHieuUng()
@@ -28,9 +30,15 @@ public class DeathEffect : MonoBehaviour
 
     IEnumerator ChayHieuUng()
     {
-        // Pause nhân vật ngay lập tức
+        // Dừng nhân vật hoàn toàn ngay lập tức
         if (playerController != null)
             playerController.enabled = false;
+
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero; // Dừng velocity
+            rb.bodyType = RigidbodyType2D.Static; // Freeze hoàn toàn
+        }
 
         // SFX chết
         if (SoundManager.instance != null)
@@ -45,13 +53,19 @@ public class DeathEffect : MonoBehaviour
         StartCoroutine(RungCamera());
         yield return new WaitForSeconds(thoiGianRung);
 
-        // PlayerController sẽ tự bật lại khi scene reload
+        // Reset Rigidbody trước khi reload
+        // (không cần thiết vì scene reload nhưng cho sạch)
+        if (rb != null)
+            rb.bodyType = RigidbodyType2D.Dynamic;
+
         GameManager.instance.PlayerChet();
     }
 
     IEnumerator RungCamera()
     {
         Camera cam = Camera.main;
+        if (cam == null) yield break;
+
         Vector3 viTriGoc = cam.transform.position;
         float thoiGianDaRung = 0f;
 
