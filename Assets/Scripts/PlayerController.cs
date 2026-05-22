@@ -31,6 +31,9 @@ public class PlayerController : MonoBehaviour
     private float thoiGianDaGiuLoXo = 0f;
     private bool dangNayLoXo = false;
 
+    private bool dangLeoDay = false;
+    private float tocDoLeoDay = 4f;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -74,6 +77,22 @@ public class PlayerController : MonoBehaviour
             if (dangDungTrenDat) thoiGianDaGiuNhay = 0f;
         }
 
+        // === INPUT LEO DÂY ===
+        if (dangLeoDay)
+        {
+            // Nhảy ra khỏi dây
+            if (Input.GetKeyDown(KeyCode.Space)
+             || Input.GetKeyDown(KeyCode.W)
+             || Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                KetThucLeoDay();
+                muonNhay = true;
+                thoiGianDaGiuNhay = 0f;
+                if (SoundManager.instance != null)
+                    SoundManager.instance.PlayNhay();
+            }
+        }
+
         // === SFX CHẠY ===
         if (dangDungTrenDat && Mathf.Abs(huongNgang) > 0.1f)
         {
@@ -99,8 +118,45 @@ public class PlayerController : MonoBehaviour
     {
         KiemTraMatDat();
         KiemTraEpTuong();
-        DiChuyen();
-        Nhay();
+
+        if (dangLeoDay)
+            DiChuyenLeoDay();
+        else
+        {
+            DiChuyen();
+            Nhay();
+        }
+    }
+
+    void DiChuyenLeoDay()
+    {
+        float huongDoc = 0f;
+
+        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
+            huongDoc = 1f;
+        else if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
+            huongDoc = -1f;
+
+        // Di chuyển ngang + dọc trên dây
+        rb.linearVelocity = new Vector2(
+            huongNgang * tocDoChay * 0.5f, // ngang chậm hơn
+            huongDoc * tocDoLeoDay);
+
+        // Tắt gravity khi đang leo
+        rb.gravityScale = 0f;
+    }
+
+    public void BatDauLeoDay(float tocDo)
+    {
+        dangLeoDay = true;
+        tocDoLeoDay = tocDo;
+        rb.gravityScale = 0f;
+    }
+
+    public void KetThucLeoDay()
+    {
+        dangLeoDay = false;
+        // Gravity tự phục hồi qua CapNhatTrongLuc()
     }
 
     void KiemTraMatDat()
@@ -175,6 +231,9 @@ public class PlayerController : MonoBehaviour
 
     void CapNhatTrongLuc()
     {
+        // Đang leo dây → gravity = 0, xử lý trong DiChuyenLeoDay()
+        if (dangLeoDay) return;
+
         if (dangEpVaoTuong) { rb.gravityScale = trongLucRoi; return; }
         if (dangDungTrenDat) { rb.gravityScale = 1f; return; }
 
