@@ -1,26 +1,26 @@
 ﻿using UnityEngine;
 
-// Script này gắn lên bất kỳ vật thể nào có thể giết Player
-// Ví dụ: spike, hố, killzone dưới đất
-// KHÔNG gắn lên FallingBrick — cái đó dùng BrickKillZone riêng
 public class KillZone : MonoBehaviour
 {
+    [Header("=== LOẠI BẪY ===")]
+    // Điền tên bẫy để AchievementManager theo dõi
+    // Các giá trị hợp lệ:
+    // "Spike" "HiddenSpike" "FakePlatform" "FallingBrick"
+    // "SpringTrap" "WallSpike" "BetrayingPlatform" ""
+    public string loaiBay = "";
+
     void OnTriggerEnter2D(Collider2D vatTheChamVao)
     {
-        if (vatTheChamVao.CompareTag("Player"))
-        {
-            DeathEffect effect = vatTheChamVao.GetComponent<DeathEffect>();
+        if (!vatTheChamVao.CompareTag("Player")) return;
 
-            if (effect != null)
-            {
-                // Có DeathEffect → chạy flash đỏ + shake trước
-                effect.KichHoatHieuUng();
-            }
-            else
-            {
-                // Không có → chết thẳng
-                GameManager.instance.PlayerChet();
-            }
-        }
+        // Báo cho AchievementManager biết loại bẫy
+        if (AchievementManager.instance != null)
+            AchievementManager.instance.KiemTraSauKhiChet(loaiBay);
+
+        DeathEffect effect = vatTheChamVao.GetComponent<DeathEffect>();
+        if (effect != null)
+            effect.KichHoatHieuUng();
+        else
+            GameManager.instance.PlayerChet();
     }
 }

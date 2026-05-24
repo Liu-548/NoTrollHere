@@ -8,7 +8,6 @@ public class TotalDeathCounterUI : MonoBehaviour
     void Update()
     {
         if (GameManager.instance == null) return;
-        // Tổng tất cả lần chết mọi session
         deathText.text = "DEATHS THIS SESSION : "
             + GameManager.instance.LayTongSoLanChetTatCa();
     }

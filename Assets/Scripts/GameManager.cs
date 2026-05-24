@@ -66,6 +66,9 @@ public class GameManager : MonoBehaviour
         if (PauseMenu.instance != null)
             PauseMenu.instance.ThemMotLanChet();
 
+        if (AchievementManager.instance != null)
+            AchievementManager.instance.KiemTraSauKhiChet("");
+
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
@@ -86,6 +89,9 @@ public class GameManager : MonoBehaviour
 
         // Kiểm tra mở chương tiếp theo
         KiemTraMoChuongTiepTheo(tenManHienTai);
+
+        if (AchievementManager.instance != null)
+            AchievementManager.instance.KiemTraSauKhiThang(tenManHienTai);
 
         soLanChet = 0;
         SceneManager.LoadScene(tenManTiepTheo);

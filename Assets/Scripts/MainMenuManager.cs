@@ -47,7 +47,8 @@ public class MainMenuManager : MonoBehaviour
     // === NÚT SETTINGS (placeholder) ===
     public void NutSettings()
     {
-        Debug.Log("Settings: coming soon");
+        if (SettingsMenu.instance != null)
+            SettingsMenu.instance.NutMoSettings();
     }
 
     // === NÚT QUIT ===
@@ -89,5 +90,11 @@ public class MainMenuManager : MonoBehaviour
             }
         }
         action?.Invoke();
+    }
+
+    public void NutSkinSelect()
+    {
+        StartCoroutine(FadeOutRoi(() =>
+            SceneManager.LoadScene("SkinSelect")));
     }
 }
