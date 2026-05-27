@@ -1,19 +1,31 @@
 fileFormatVersion: 2
-guid: c232f13498189344f99de3b602bdc1b6
+guid: c9cd1e6a0d61efc40bfd991b69c0c540
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1281987935480001433
-    second: SpriteChap2_0
+      213: -5089569844378946469
+    second: PowerRangerSkin_0
   - first:
-      213: 1820406568806604689
-    second: SpriteChap2_1
+      213: 2602337569328208210
+    second: PowerRangerSkin_1
   - first:
-      213: 300065306429728552
-    second: SpriteChap2_2
+      213: 306462547890345439
+    second: PowerRangerSkin_2
   - first:
-      213: 5921595137710728386
-    second: SpriteChap2_3
+      213: -7280295475462755640
+    second: PowerRangerSkin_3
+  - first:
+      213: 7291550668839574227
+    second: PowerRangerSkin_4
+  - first:
+      213: 4061954434563957100
+    second: PowerRangerSkin_5
+  - first:
+      213: -4777574148704803394
+    second: PowerRangerSkin_6
+  - first:
+      213: 6608165550797541534
+    second: PowerRangerSkin_7
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,21 +58,21 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
-    wrapU: 0
-    wrapV: 0
-    wrapW: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 0
+  spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 16
+  spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -84,7 +96,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -135,133 +147,177 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: SpriteChap2_0
+      name: PowerRangerSkin_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
+        y: 1
         width: 16
-        height: 16
+        height: 28
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 14be2f6c417e65740bea68bc7c53d721
-      internalID: 1281987935480001433
+      spriteID: b54b04631373e59b0800000000000000
+      internalID: -5089569844378946469
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: SpriteChap2_1
+      name: PowerRangerSkin_1
       rect:
         serializedVersion: 2
         x: 16
-        y: 0
+        y: 1
         width: 16
-        height: 16
+        height: 26
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 293f978e89749054382a870165be733d
-      internalID: 1820406568806604689
+      spriteID: 25916754b3c5d1420800000000000000
+      internalID: 2602337569328208210
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: SpriteChap2_2
+      name: PowerRangerSkin_2
       rect:
         serializedVersion: 2
-        x: 32
-        y: 0
+        x: 31
+        y: 1
+        width: 17
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fd517f74016c04400800000000000000
+      internalID: 306462547890345439
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: PowerRangerSkin_3
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 1
         width: 16
-        height: 16
+        height: 28
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 587471a4bf08c444ba9dd98fe22d4657
-      internalID: 300065306429728552
+      spriteID: 8caa82576d137fa90800000000000000
+      internalID: -7280295475462755640
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: SpriteChap2_3
+      name: PowerRangerSkin_4
       rect:
         serializedVersion: 2
-        x: 53
-        y: 0
-        width: 6
-        height: 16
+        x: 63
+        y: 1
+        width: 18
+        height: 28
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: a8b5211baf6252c4d97ab4a265941825
-      internalID: 5921595137710728386
+      spriteID: 3dad1f573bac03560800000000000000
+      internalID: 7291550668839574227
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: SpriteChap2_4
-      rect:
-        serializedVersion: 2
-        x: 65
-        y: 0
-        width: 14
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 65daabdcef6a3d541aa37769c7f9600c
-      internalID: 2007983473
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: SpriteChap2_5
+      name: PowerRangerSkin_5
       rect:
         serializedVersion: 2
         x: 80
-        y: 0
+        y: 1
         width: 16
-        height: 16
+        height: 28
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 3d244f97a34cf2f4daf2c03380696a05
-      internalID: 2052917436
+      spriteID: c61e10e7906fe5830800000000000000
+      internalID: 4061954434563957100
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: PowerRangerSkin_6
+      rect:
+        serializedVersion: 2
+        x: 95
+        y: 5
+        width: 18
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eb56c5adf95a2bdb0800000000000000
+      internalID: -4777574148704803394
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: PowerRangerSkin_7
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 1
+        width: 16
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e90d2409e8be4bb50800000000000000
+      internalID: 6608165550797541534
       vertices: []
       indices: 
       edges: []
@@ -270,7 +326,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: b40f918c2daac86448b8447ae2e236cb
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -278,16 +334,16 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries:
-      - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":16.0,"y":16.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+      entries: []
     nameFileIdTable:
-      SpriteChap2_0: 1281987935480001433
-      SpriteChap2_1: 1820406568806604689
-      SpriteChap2_2: 300065306429728552
-      SpriteChap2_3: 5921595137710728386
-      SpriteChap2_4: 2007983473
-      SpriteChap2_5: 2052917436
+      PowerRangerSkin_0: -5089569844378946469
+      PowerRangerSkin_1: 2602337569328208210
+      PowerRangerSkin_2: 306462547890345439
+      PowerRangerSkin_3: -7280295475462755640
+      PowerRangerSkin_4: 7291550668839574227
+      PowerRangerSkin_5: 4061954434563957100
+      PowerRangerSkin_6: -4777574148704803394
+      PowerRangerSkin_7: 6608165550797541534
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

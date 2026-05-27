@@ -27,12 +27,14 @@ public class PlayerController : MonoBehaviour
     // Lò xo
     private float lucLoXo = 0f;
     private Vector2 huongLoXo = Vector2.up;
-    private float thoiGianGiuLoXo = 0.3f; // Giữ lực lò xo bao lâu
+    private float thoiGianGiuLoXo = 0.5f; // Giữ lực lò xo bao lâu
     private float thoiGianDaGiuLoXo = 0f;
     private bool dangNayLoXo = false;
 
     private bool dangLeoDay = false;
     private float tocDoLeoDay = 4f;
+    // Thêm biến
+    private float thoiGianKhoaLeoDay = 0f;
 
     void Start()
     {
@@ -43,6 +45,10 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        // Thêm vào đầu Update(), trước phần input
+        if (thoiGianKhoaLeoDay > 0)
+            thoiGianKhoaLeoDay -= Time.deltaTime;
+
         // === INPUT NGANG ===
         huongNgang = 0f;
         if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
@@ -119,6 +125,13 @@ public class PlayerController : MonoBehaviour
         KiemTraMatDat();
         KiemTraEpTuong();
 
+        // Đang nảy lò xo → bỏ qua leo dây hoàn toàn
+        if (dangNayLoXo)
+        {
+            Nhay();
+            return;
+        }
+
         if (dangLeoDay)
             DiChuyenLeoDay();
         else
@@ -148,6 +161,9 @@ public class PlayerController : MonoBehaviour
 
     public void BatDauLeoDay(float tocDo)
     {
+        // Không cho leo nếu đang trong thời gian khóa
+        if (thoiGianKhoaLeoDay > 0) return;
+
         dangLeoDay = true;
         tocDoLeoDay = tocDo;
         rb.gravityScale = 0f;
@@ -156,7 +172,8 @@ public class PlayerController : MonoBehaviour
     public void KetThucLeoDay()
     {
         dangLeoDay = false;
-        // Gravity tự phục hồi qua CapNhatTrongLuc()
+        // Reset gravity ngay lập tức
+        rb.gravityScale = trongLucRoi;
     }
 
     void KiemTraMatDat()
@@ -192,11 +209,16 @@ public class PlayerController : MonoBehaviour
 
     void DiChuyen()
     {
-        // Chỉ block di chuyển khi lò xo theo chiều NGANG
-        // Lò xo thẳng lên (huongLoXo.x nhỏ) → vẫn cho di chuyển bình thường
-        if (dangNayLoXo && Mathf.Abs(huongLoXo.x) > 0.5f
-            && thoiGianDaGiuLoXo > 0.1f)
+        // Lò xo ngang (x > 0.3) → khóa di chuyển trong thời gian giữ
+        if (thoiGianDaGiuLoXo > 0 && Mathf.Abs(huongLoXo.x) > 0.3f)
+        {
+            thoiGianDaGiuLoXo -= Time.fixedDeltaTime;
             return;
+        }
+
+        // Lò xo thẳng lên → thoiGianDaGiuLoXo vẫn đếm nhưng không khóa
+        if (thoiGianDaGiuLoXo > 0)
+            thoiGianDaGiuLoXo -= Time.fixedDeltaTime;
 
         rb.linearVelocity = new Vector2(
             huongNgang * tocDoChay,
@@ -212,20 +234,15 @@ public class PlayerController : MonoBehaviour
         if (dangNayLoXo)
         {
             if (Mathf.Abs(huongLoXo.x) < 0.3f)
-            {
-                // Lò xo thẳng lên — chỉ set velocity.y, giữ velocity.x từ input
                 rb.linearVelocity = new Vector2(
                     huongNgang * tocDoChay,
                     huongLoXo.y * lucLoXo);
-            }
             else
-            {
-                // Lò xo ngang — set toàn bộ velocity
                 rb.linearVelocity = huongLoXo * lucLoXo;
-            }
+
             dangNayLoXo = false;
             lucLoXo = 0f;
-            thoiGianDaGiuLoXo = thoiGianGiuLoXo;
+            thoiGianDaGiuLoXo = thoiGianGiuLoXo; // Set sau khi nảy
         }
     }
 
@@ -257,8 +274,14 @@ public class PlayerController : MonoBehaviour
     // Gọi từ SpringTrap
     public void NayLoXo(float luc, Vector2 huong)
     {
+        dangLeoDay = false;
+        rb.gravityScale = trongLucRoi;
+        rb.linearVelocity = Vector2.zero;
+
         lucLoXo = luc;
         huongLoXo = huong.normalized;
         dangNayLoXo = true;
+        thoiGianDaGiuLoXo = thoiGianGiuLoXo;
+        thoiGianKhoaLeoDay = 0.5f; // Khóa leo dây 0.5s
     }
 }

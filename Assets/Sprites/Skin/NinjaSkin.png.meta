@@ -1,19 +1,28 @@
 fileFormatVersion: 2
-guid: c232f13498189344f99de3b602bdc1b6
+guid: 6086b605ad5edf442a3b3ea260a3768a
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1281987935480001433
-    second: SpriteChap2_0
+      213: -5293009898495229691
+    second: NinjaSkin_0
   - first:
-      213: 1820406568806604689
-    second: SpriteChap2_1
+      213: -7331267469022372682
+    second: NinjaSkin_1
   - first:
-      213: 300065306429728552
-    second: SpriteChap2_2
+      213: -3234558420718662834
+    second: NinjaSkin_2
   - first:
-      213: 5921595137710728386
-    second: SpriteChap2_3
+      213: -7099782881380979312
+    second: NinjaSkin_3
+  - first:
+      213: 4538229233331663018
+    second: NinjaSkin_4
+  - first:
+      213: -93056387629824877
+    second: NinjaSkin_5
+  - first:
+      213: 5265549751623722903
+    second: NinjaSkin_6
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,21 +55,21 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
-    wrapU: 0
-    wrapV: 0
-    wrapW: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 0
+  spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 16
+  spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -84,7 +93,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -135,133 +144,155 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: SpriteChap2_0
+      name: NinjaSkin_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
+        y: 1
         width: 16
-        height: 16
+        height: 28
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 14be2f6c417e65740bea68bc7c53d721
-      internalID: 1281987935480001433
+      spriteID: 501c0977a837b86b0800000000000000
+      internalID: -5293009898495229691
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: SpriteChap2_1
+      name: NinjaSkin_1
       rect:
         serializedVersion: 2
-        x: 16
-        y: 0
-        width: 16
-        height: 16
+        x: 15
+        y: 1
+        width: 17
+        height: 26
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 293f978e89749054382a870165be733d
-      internalID: 1820406568806604689
+      spriteID: 6bc5b83641b124a90800000000000000
+      internalID: -7331267469022372682
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: SpriteChap2_2
+      name: NinjaSkin_2
       rect:
         serializedVersion: 2
-        x: 32
-        y: 0
-        width: 16
-        height: 16
+        x: 31
+        y: 1
+        width: 17
+        height: 28
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 587471a4bf08c444ba9dd98fe22d4657
-      internalID: 300065306429728552
+      spriteID: e4bc0d7f04a8c13d0800000000000000
+      internalID: -3234558420718662834
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: SpriteChap2_3
+      name: NinjaSkin_3
       rect:
         serializedVersion: 2
-        x: 53
-        y: 0
-        width: 6
-        height: 16
+        x: 47
+        y: 1
+        width: 17
+        height: 28
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: a8b5211baf6252c4d97ab4a265941825
-      internalID: 5921595137710728386
+      spriteID: 09d23ece511887d90800000000000000
+      internalID: -7099782881380979312
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: SpriteChap2_4
+      name: NinjaSkin_4
       rect:
         serializedVersion: 2
-        x: 65
-        y: 0
-        width: 14
-        height: 16
+        x: 63
+        y: 1
+        width: 18
+        height: 28
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 65daabdcef6a3d541aa37769c7f9600c
-      internalID: 2007983473
+      spriteID: aa0f60271770bfe30800000000000000
+      internalID: 4538229233331663018
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: SpriteChap2_5
+      name: NinjaSkin_5
       rect:
         serializedVersion: 2
-        x: 80
-        y: 0
-        width: 16
-        height: 16
+        x: 79
+        y: 1
+        width: 17
+        height: 28
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 3d244f97a34cf2f4daf2c03380696a05
-      internalID: 2052917436
+      spriteID: 3944e3f55b565bef0800000000000000
+      internalID: -93056387629824877
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NinjaSkin_6
+      rect:
+        serializedVersion: 2
+        x: 95
+        y: 1
+        width: 33
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 797adacd99df21940800000000000000
+      internalID: 5265549751623722903
       vertices: []
       indices: 
       edges: []
@@ -270,7 +301,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: b40f918c2daac86448b8447ae2e236cb
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -278,16 +309,15 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries:
-      - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":16.0,"y":16.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+      entries: []
     nameFileIdTable:
-      SpriteChap2_0: 1281987935480001433
-      SpriteChap2_1: 1820406568806604689
-      SpriteChap2_2: 300065306429728552
-      SpriteChap2_3: 5921595137710728386
-      SpriteChap2_4: 2007983473
-      SpriteChap2_5: 2052917436
+      NinjaSkin_0: -5293009898495229691
+      NinjaSkin_1: -7331267469022372682
+      NinjaSkin_2: -3234558420718662834
+      NinjaSkin_3: -7099782881380979312
+      NinjaSkin_4: 4538229233331663018
+      NinjaSkin_5: -93056387629824877
+      NinjaSkin_6: 5265549751623722903
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

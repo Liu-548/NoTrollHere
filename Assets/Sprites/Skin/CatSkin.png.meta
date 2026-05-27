@@ -1,19 +1,31 @@
 fileFormatVersion: 2
-guid: c232f13498189344f99de3b602bdc1b6
+guid: 94a66ed230cd980408a5af77fca54298
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1281987935480001433
-    second: SpriteChap2_0
+      213: -2307745028034579408
+    second: CatSkin_0
   - first:
-      213: 1820406568806604689
-    second: SpriteChap2_1
+      213: 1387344812291634988
+    second: CatSkin_1
   - first:
-      213: 300065306429728552
-    second: SpriteChap2_2
+      213: 4792160240914170623
+    second: CatSkin_2
   - first:
-      213: 5921595137710728386
-    second: SpriteChap2_3
+      213: -525618821035991503
+    second: CatSkin_3
+  - first:
+      213: -1452831955806873408
+    second: CatSkin_4
+  - first:
+      213: -6463104665979326123
+    second: CatSkin_5
+  - first:
+      213: -5003323572075484806
+    second: CatSkin_6
+  - first:
+      213: 3848736985217324946
+    second: CatSkin_7
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,21 +58,21 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
-    wrapU: 0
-    wrapV: 0
-    wrapW: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 0
+  spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 16
+  spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -84,7 +96,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -135,133 +147,177 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: SpriteChap2_0
+      name: CatSkin_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
+        y: 1
         width: 16
-        height: 16
+        height: 31
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 14be2f6c417e65740bea68bc7c53d721
-      internalID: 1281987935480001433
+      spriteID: 03433dbbf1e39ffd0800000000000000
+      internalID: -2307745028034579408
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: SpriteChap2_1
+      name: CatSkin_1
       rect:
         serializedVersion: 2
         x: 16
-        y: 0
+        y: 1
         width: 16
-        height: 16
+        height: 30
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 293f978e89749054382a870165be733d
-      internalID: 1820406568806604689
+      spriteID: c27bf9d91c6d04310800000000000000
+      internalID: 1387344812291634988
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: SpriteChap2_2
+      name: CatSkin_2
       rect:
         serializedVersion: 2
-        x: 32
-        y: 0
+        x: 31
+        y: 1
+        width: 17
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ff28072695c218240800000000000000
+      internalID: 4792160240914170623
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatSkin_3
+      rect:
+        serializedVersion: 2
+        x: 50
+        y: 1
+        width: 13
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 13ed3e49770a4b8f0800000000000000
+      internalID: -525618821035991503
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatSkin_4
+      rect:
+        serializedVersion: 2
+        x: 63
+        y: 1
+        width: 18
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c89bcb980186dbe0800000000000000
+      internalID: -1452831955806873408
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatSkin_5
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 1
+        width: 13
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 551f12e9c807e46a0800000000000000
+      internalID: -6463104665979326123
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatSkin_6
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 5
         width: 16
-        height: 16
+        height: 27
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 587471a4bf08c444ba9dd98fe22d4657
-      internalID: 300065306429728552
+      spriteID: a792a1e48bf909ab0800000000000000
+      internalID: -5003323572075484806
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: SpriteChap2_3
+      name: CatSkin_7
       rect:
         serializedVersion: 2
-        x: 53
-        y: 0
-        width: 6
-        height: 16
+        x: 114
+        y: 1
+        width: 13
+        height: 31
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: a8b5211baf6252c4d97ab4a265941825
-      internalID: 5921595137710728386
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: SpriteChap2_4
-      rect:
-        serializedVersion: 2
-        x: 65
-        y: 0
-        width: 14
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 65daabdcef6a3d541aa37769c7f9600c
-      internalID: 2007983473
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: SpriteChap2_5
-      rect:
-        serializedVersion: 2
-        x: 80
-        y: 0
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 3d244f97a34cf2f4daf2c03380696a05
-      internalID: 2052917436
+      spriteID: 29759c585e5796530800000000000000
+      internalID: 3848736985217324946
       vertices: []
       indices: 
       edges: []
@@ -270,7 +326,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: b40f918c2daac86448b8447ae2e236cb
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -278,16 +334,16 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries:
-      - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":16.0,"y":16.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+      entries: []
     nameFileIdTable:
-      SpriteChap2_0: 1281987935480001433
-      SpriteChap2_1: 1820406568806604689
-      SpriteChap2_2: 300065306429728552
-      SpriteChap2_3: 5921595137710728386
-      SpriteChap2_4: 2007983473
-      SpriteChap2_5: 2052917436
+      CatSkin_0: -2307745028034579408
+      CatSkin_1: 1387344812291634988
+      CatSkin_2: 4792160240914170623
+      CatSkin_3: -525618821035991503
+      CatSkin_4: -1452831955806873408
+      CatSkin_5: -6463104665979326123
+      CatSkin_6: -5003323572075484806
+      CatSkin_7: 3848736985217324946
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

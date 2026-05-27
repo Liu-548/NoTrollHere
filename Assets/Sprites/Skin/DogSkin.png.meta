@@ -1,19 +1,31 @@
 fileFormatVersion: 2
-guid: c232f13498189344f99de3b602bdc1b6
+guid: 76bb2ac2cf3559e4e92896c2ddf298d3
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1281987935480001433
-    second: SpriteChap2_0
+      213: -3514138422400016772
+    second: DogSkin_0
   - first:
-      213: 1820406568806604689
-    second: SpriteChap2_1
+      213: -4442639745893571136
+    second: DogSkin_1
   - first:
-      213: 300065306429728552
-    second: SpriteChap2_2
+      213: -5019658315837237545
+    second: DogSkin_2
   - first:
-      213: 5921595137710728386
-    second: SpriteChap2_3
+      213: -8034697350557675528
+    second: DogSkin_3
+  - first:
+      213: -3187365719018998025
+    second: DogSkin_4
+  - first:
+      213: 6179310368512869339
+    second: DogSkin_5
+  - first:
+      213: 5973304932822111893
+    second: DogSkin_6
+  - first:
+      213: -1600408041460493918
+    second: DogSkin_7
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,21 +58,21 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
-    wrapU: 0
-    wrapV: 0
-    wrapW: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 0
+  spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 16
+  spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -84,7 +96,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -135,133 +147,177 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: SpriteChap2_0
+      name: DogSkin_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
+        y: 1
         width: 16
-        height: 16
+        height: 31
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 14be2f6c417e65740bea68bc7c53d721
-      internalID: 1281987935480001433
+      spriteID: c7e9b4939b54b3fc0800000000000000
+      internalID: -3514138422400016772
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: SpriteChap2_1
+      name: DogSkin_1
       rect:
         serializedVersion: 2
-        x: 16
-        y: 0
-        width: 16
-        height: 16
+        x: 15
+        y: 1
+        width: 17
+        height: 31
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 293f978e89749054382a870165be733d
-      internalID: 1820406568806604689
+      spriteID: 0c56bf070b29852c0800000000000000
+      internalID: -4442639745893571136
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: SpriteChap2_2
+      name: DogSkin_2
       rect:
         serializedVersion: 2
-        x: 32
-        y: 0
-        width: 16
-        height: 16
+        x: 31
+        y: 1
+        width: 17
+        height: 31
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 587471a4bf08c444ba9dd98fe22d4657
-      internalID: 300065306429728552
+      spriteID: 7d69fa66b57965ab0800000000000000
+      internalID: -5019658315837237545
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: SpriteChap2_3
+      name: DogSkin_3
       rect:
         serializedVersion: 2
-        x: 53
-        y: 0
-        width: 6
-        height: 16
+        x: 47
+        y: 1
+        width: 17
+        height: 31
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: a8b5211baf6252c4d97ab4a265941825
-      internalID: 5921595137710728386
+      spriteID: 8ffcc3e44550f7090800000000000000
+      internalID: -8034697350557675528
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: SpriteChap2_4
+      name: DogSkin_4
       rect:
         serializedVersion: 2
-        x: 65
-        y: 0
-        width: 14
-        height: 16
+        x: 63
+        y: 1
+        width: 18
+        height: 31
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 65daabdcef6a3d541aa37769c7f9600c
-      internalID: 2007983473
+      spriteID: 7f67d9414c334c3d0800000000000000
+      internalID: -3187365719018998025
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: SpriteChap2_5
+      name: DogSkin_5
       rect:
         serializedVersion: 2
-        x: 80
-        y: 0
-        width: 16
-        height: 16
+        x: 79
+        y: 1
+        width: 17
+        height: 31
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 3d244f97a34cf2f4daf2c03380696a05
-      internalID: 2052917436
+      spriteID: bd309107a0251c550800000000000000
+      internalID: 6179310368512869339
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogSkin_6
+      rect:
+        serializedVersion: 2
+        x: 95
+        y: 4
+        width: 17
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 59653ff303175e250800000000000000
+      internalID: 5973304932822111893
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogSkin_7
+      rect:
+        serializedVersion: 2
+        x: 111
+        y: 1
+        width: 17
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2a191199d553ac9e0800000000000000
+      internalID: -1600408041460493918
       vertices: []
       indices: 
       edges: []
@@ -270,7 +326,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: b40f918c2daac86448b8447ae2e236cb
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -278,16 +334,16 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries:
-      - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":16.0,"y":16.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+      entries: []
     nameFileIdTable:
-      SpriteChap2_0: 1281987935480001433
-      SpriteChap2_1: 1820406568806604689
-      SpriteChap2_2: 300065306429728552
-      SpriteChap2_3: 5921595137710728386
-      SpriteChap2_4: 2007983473
-      SpriteChap2_5: 2052917436
+      DogSkin_0: -3514138422400016772
+      DogSkin_1: -4442639745893571136
+      DogSkin_2: -5019658315837237545
+      DogSkin_3: -8034697350557675528
+      DogSkin_4: -3187365719018998025
+      DogSkin_5: 6179310368512869339
+      DogSkin_6: 5973304932822111893
+      DogSkin_7: -1600408041460493918
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
