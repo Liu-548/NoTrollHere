@@ -1,97 +1,109 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using TMPro;
 
-// Gắn lên bất kỳ GameObject nào trong scene
-// Khi player bước vào vùng trigger → hiện text trên đầu nhân vật
 public class DialogueTrigger : MonoBehaviour
 {
     [Header("=== NỘI DUNG ===")]
     [TextArea(2, 5)]
-    public string[] cacDongThoai; // Nhiều dòng thoại, hiện lần lượt
-    public float thoiGianMoiDong = 3f; // Mỗi dòng hiện bao lâu
-    public float thoiGianFade = 0.5f;  // Thời gian fade in/out
+    public string[] cacDongThoai;
+    public float thoiGianMoiDong = 3f;
+    public float thoiGianFade = 0.5f;
 
     [Header("=== VỊ TRÍ TEXT ===")]
     public Vector3 offsetText = new Vector3(0f, 1.5f, 0f);
-    // Offset so với đầu nhân vật
 
     [Header("=== STYLE ===")]
     public float coChu = 14f;
-    public Color mauChu = new Color(0.91f, 0.91f, 0.82f, 1f); // #E8E8D0
+    public Color mauChu = new Color(0.91f, 0.91f, 0.82f, 1f);
     public Color mauNen = new Color(0.1f, 0.1f, 0.1f, 0.85f);
     public float rongToiDa = 300f;
 
     [Header("=== CÀI ĐẶT ===")]
     public bool chiHienMotLan = true;
-    public bool dungGameKhiHien = false; // false = không pause game
 
     private bool daHien = false;
-    private Transform playerTransform;
-    private GameObject textObject;
-    private TextMeshPro tmpText;
-    private GameObject nenObject;
-    private SpriteRenderer nenRenderer;
 
-    void Start()
+    // ─── SHARED STATIC — dùng chung cho toàn bộ scene ───
+    private static GameObject s_TextObject;
+    private static TextMeshPro s_TmpText;
+    private static GameObject s_NenObject;
+    private static SpriteRenderer s_NenRenderer;
+    private static DialogueTrigger s_DangChay;   // trigger đang hiển thị
+    private static Coroutine s_Coroutine;
+    private static Transform s_PlayerTransform;
+    private static Vector3 s_OffsetHienTai;
+    // ─────────────────────────────────────────────────────
+
+    void Awake()
     {
-        // Tìm player
+        // Dọn object cũ nếu scene reload (static vẫn còn giá trị cũ)
+        if (s_TextObject == null)
+            KhoiTaoShared();
+    }
+
+    void OnEnable()
+    {
+        SceneManager.sceneUnloaded += OnSceneUnloaded;
+    }
+
+    void OnDisable()
+    {
+        SceneManager.sceneUnloaded -= OnSceneUnloaded;
+    }
+
+    static void OnSceneUnloaded(Scene scene)
+    {
+        // Reset shared state khi scene unload
+        s_TextObject = null;
+        s_TmpText = null;
+        s_NenObject = null;
+        s_NenRenderer = null;
+        s_DangChay = null;
+        s_Coroutine = null;
+        s_PlayerTransform = null;
+    }
+
+    static void KhoiTaoShared()
+    {
         GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null)
-            playerTransform = player.transform;
+        if (player != null) s_PlayerTransform = player.transform;
 
-        // Tạo text object
-        TaoTextObject();
-    }
+        s_TextObject = new GameObject("DialogueText_Shared");
 
-    void TaoTextObject()
-    {
-        // Tạo parent container
-        textObject = new GameObject("DialogueText_" + gameObject.name);
+        s_NenObject = new GameObject("Background");
+        s_NenObject.transform.SetParent(s_TextObject.transform, false);
+        s_NenRenderer = s_NenObject.AddComponent<SpriteRenderer>();
+        s_NenRenderer.sprite = TaoSpriteNen();
+        s_NenRenderer.sortingOrder = 10;
 
-        // Tạo nền (sprite renderer)
-        nenObject = new GameObject("Background");
-        nenObject.transform.SetParent(textObject.transform, false);
-        nenRenderer = nenObject.AddComponent<SpriteRenderer>();
-        nenRenderer.sprite = TaoSpriteNen();
-        nenRenderer.color = mauNen;
-        nenRenderer.sortingOrder = 10;
-
-        // Tạo TMP text
         GameObject tmpObj = new GameObject("Text");
-        tmpObj.transform.SetParent(textObject.transform, false);
-        tmpText = tmpObj.AddComponent<TextMeshPro>();
-        tmpText.fontSize = coChu;
-        tmpText.color = mauChu;
-        tmpText.alignment = TextAlignmentOptions.Center;
-        tmpText.textWrappingMode = TextWrappingModes.Normal;
-        tmpText.rectTransform.sizeDelta = new Vector2(rongToiDa / 100f, 10f);
-        tmpText.sortingOrder = 11;
+        tmpObj.transform.SetParent(s_TextObject.transform, false);
+        s_TmpText = tmpObj.AddComponent<TextMeshPro>();
+        s_TmpText.fontSize = 14f;
+        s_TmpText.alignment = TextAlignmentOptions.Center;
+        s_TmpText.textWrappingMode = TextWrappingModes.Normal;
+        s_TmpText.rectTransform.sizeDelta = new Vector2(3f, 10f);
+        s_TmpText.sortingOrder = 11;
 
-        // Ẩn ban đầu
-        textObject.SetActive(false);
+        s_TextObject.SetActive(false);
     }
 
-    Sprite TaoSpriteNen()
+    static Sprite TaoSpriteNen()
     {
-        // Tạo texture trắng 1x1 làm nền
         Texture2D tex = new Texture2D(1, 1);
         tex.SetPixel(0, 0, Color.white);
         tex.Apply();
-        return Sprite.Create(tex,
-            new Rect(0, 0, 1, 1),
-            new Vector2(0.5f, 0.5f), 1f);
+        return Sprite.Create(tex, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f);
     }
 
     void Update()
     {
-        // Text luôn theo đầu player
-        if (textObject != null && textObject.activeSelf
-            && playerTransform != null)
-        {
-            textObject.transform.position =
-                playerTransform.position + offsetText;
-        }
+        // Chỉ trigger đang hiển thị mới cập nhật vị trí
+        if (s_DangChay != this) return;
+        if (s_TextObject != null && s_TextObject.activeSelf && s_PlayerTransform != null)
+            s_TextObject.transform.position = s_PlayerTransform.position + s_OffsetHienTai;
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -99,8 +111,39 @@ public class DialogueTrigger : MonoBehaviour
         if (!other.CompareTag("Player")) return;
         if (chiHienMotLan && daHien) return;
 
+        // Đảm bảo shared object tồn tại (có thể null sau scene reload)
+        if (s_TextObject == null)
+        {
+            KhoiTaoShared();
+            // Cập nhật style từ trigger này
+        }
+
+        // Cập nhật player transform nếu cần
+        if (s_PlayerTransform == null)
+        {
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null) s_PlayerTransform = p.transform;
+        }
+
         daHien = true;
-        StartCoroutine(HienThiThoai());
+
+        // Dừng trigger đang chạy (nếu có) trước khi bắt đầu cái mới
+        if (s_DangChay != null && s_Coroutine != null)
+        {
+            s_DangChay.StopCoroutine(s_Coroutine);
+            s_Coroutine = null;
+        }
+
+        s_DangChay = this;
+        s_OffsetHienTai = offsetText;
+
+        // Áp style của trigger này
+        s_TmpText.fontSize = coChu;
+        s_TmpText.color = mauChu;
+        s_TmpText.rectTransform.sizeDelta = new Vector2(rongToiDa / 100f, 10f);
+        s_NenRenderer.color = mauNen;
+
+        s_Coroutine = StartCoroutine(HienThiThoai());
     }
 
     IEnumerator HienThiThoai()
@@ -108,42 +151,40 @@ public class DialogueTrigger : MonoBehaviour
         if (cacDongThoai == null || cacDongThoai.Length == 0)
             yield break;
 
-        textObject.SetActive(true);
+        s_TextObject.SetActive(true);
 
         foreach (string dong in cacDongThoai)
         {
-            tmpText.text = dong;
+            // Nếu trigger này bị interrupt ở giữa, dừng lại
+            if (s_DangChay != this) yield break;
 
-            // Cập nhật kích thước nền theo text
+            s_TmpText.text = dong;
             CapNhatKichThuocNen();
 
-            // Fade in
             yield return StartCoroutine(FadeText(0f, 1f, thoiGianFade));
-
-            // Hiện
             yield return new WaitForSeconds(thoiGianMoiDong);
-
-            // Fade out
             yield return StartCoroutine(FadeText(1f, 0f, thoiGianFade));
         }
 
-        textObject.SetActive(false);
+        // Chỉ ẩn nếu vẫn là trigger đang active
+        if (s_DangChay == this)
+        {
+            s_TextObject.SetActive(false);
+            s_DangChay = null;
+            s_Coroutine = null;
+        }
     }
 
     void CapNhatKichThuocNen()
     {
-        // Tính kích thước nền dựa theo text
         float chieuRong = Mathf.Min(
-            tmpText.preferredWidth + 0.3f,
+            s_TmpText.preferredWidth + 0.3f,
             rongToiDa / 100f + 0.3f);
-        float chieuCao = tmpText.preferredHeight + 0.2f;
+        float chieuCao = s_TmpText.preferredHeight + 0.2f;
 
-        nenObject.transform.localScale =
-            new Vector3(chieuRong, chieuCao, 1f);
-        nenObject.transform.localPosition = Vector3.zero;
-
-        // Offset text lên trên nền một chút
-        tmpText.transform.localPosition = new Vector3(0, 0, -0.1f);
+        s_NenObject.transform.localScale = new Vector3(chieuRong, chieuCao, 1f);
+        s_NenObject.transform.localPosition = Vector3.zero;
+        s_TmpText.transform.localPosition = new Vector3(0, 0, -0.1f);
     }
 
     IEnumerator FadeText(float tuAlpha, float denAlpha, float thoiGian)
@@ -151,18 +192,15 @@ public class DialogueTrigger : MonoBehaviour
         float t = 0f;
         while (t < thoiGian)
         {
+            if (s_DangChay != this) yield break;
             t += Time.deltaTime;
             float alpha = Mathf.Lerp(tuAlpha, denAlpha, t / thoiGian);
 
-            // Fade text
-            Color mauText = mauChu;
-            mauText.a = alpha;
-            tmpText.color = mauText;
+            Color mauT = mauChu; mauT.a = alpha;
+            s_TmpText.color = mauT;
 
-            // Fade nền
-            Color mauBg = mauNen;
-            mauBg.a = mauNen.a * alpha;
-            nenRenderer.color = mauBg;
+            Color mauB = mauNen; mauB.a = mauNen.a * alpha;
+            s_NenRenderer.color = mauB;
 
             yield return null;
         }
@@ -170,25 +208,16 @@ public class DialogueTrigger : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        // Vẽ vùng trigger trong Scene view
         Gizmos.color = new Color(0.96f, 0.78f, 0.26f, 0.3f);
         BoxCollider2D box = GetComponent<BoxCollider2D>();
         if (box != null)
-            Gizmos.DrawCube(
-                transform.position + (Vector3)box.offset,
-                box.size);
+            Gizmos.DrawCube(transform.position + (Vector3)box.offset, box.size);
 
 #if UNITY_EDITOR
         if (cacDongThoai != null && cacDongThoai.Length > 0)
             UnityEditor.Handles.Label(
                 transform.position + Vector3.up * 0.5f,
-                "💬 " + cacDongThoai[0]);
+                "[D] " + cacDongThoai[0]);
 #endif
-    }
-
-    void OnDestroy()
-    {
-        if (textObject != null)
-            Destroy(textObject);
     }
 }

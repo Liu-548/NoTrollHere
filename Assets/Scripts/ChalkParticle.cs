@@ -73,6 +73,7 @@ public class ChalkParticle : MonoBehaviour
 
     void Update()
     {
+        if (cacHat == null) return; // chưa Start() xong
         float time = Time.time;
         for (int i = 0; i < cacHat.Length; i++)
         {

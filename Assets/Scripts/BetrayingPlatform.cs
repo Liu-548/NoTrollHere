@@ -8,7 +8,8 @@ public class BetrayingPlatform : MonoBehaviour
         TuDong,
         ChoTrigger,
         TuDongMotChieu,
-        Waypoint
+        Waypoint,
+        XoayBay       // xoay đúng N độ rồi dừng → đẩy player xuống vực
     }
 
     public enum CheDoWaypoint
@@ -16,6 +17,18 @@ public class BetrayingPlatform : MonoBehaviour
         MotChieu,
         LapLai,
         PingPong
+    }
+
+    public enum HuongXoay
+    {
+        NguocKimDongHo,  // Z dương (+)
+        XuoiKimDongHo    // Z âm  (-)
+    }
+
+    public enum CheDoSauXoay
+    {
+        OYenTaiCho,  // giữ nguyên góc sau khi xoay
+        TroVeGoc     // xoay ngược về vị trí ban đầu
     }
 
     [Header("=== CHẾ ĐỘ ===")]
@@ -42,9 +55,25 @@ public class BetrayingPlatform : MonoBehaviour
     public float delayTruocKhiDi = 0f;
     public float delayTaiDiem = 0.5f;
 
-    [Header("=== XOAY ===")]
+    [Header("=== XOAY (di chuyển) ===")]
     public bool coXoay = false;
     public float tocDoXoay = 90f;
+
+    [Header("=== XOAY BAY (chế độ XoayBay) ===")]
+    [Tooltip("Số độ cần xoay")]
+    public float gocXoayBay = 90f;
+    [Tooltip("Hướng xoay")]
+    public HuongXoay huongXoay = HuongXoay.NguocKimDongHo;
+    [Tooltip("Tốc độ xoay đi (độ/giây)")]
+    public float tocDoXoayBay = 120f;
+    [Tooltip("Delay trước khi bắt đầu xoay")]
+    public float delayXoayBay = 0f;
+    [Tooltip("Sau khi xoay xong thì làm gì")]
+    public CheDoSauXoay cheDoSauXoay = CheDoSauXoay.OYenTaiCho;
+    [Tooltip("Delay trước khi xoay về (chỉ dùng khi TroVeGoc)")]
+    public float delayTruocKhiTroVe = 1f;
+    [Tooltip("Tốc độ xoay về (chỉ dùng khi TroVeGoc)")]
+    public float tocDoXoayVe = 120f;
 
     [Header("=== PHÁ HỦY ===")]
     public bool phaHuySauKhiDen = false;
@@ -81,6 +110,8 @@ public class BetrayingPlatform : MonoBehaviour
             StartCoroutine(TuDongMotChieu());
         else if (cheDo == CheDoDidong.Waypoint)
             StartCoroutine(DiChuyenWaypoint());
+        else if (cheDo == CheDoDidong.XoayBay)
+            StartCoroutine(XoayBayTuDong());
     }
 
     void Update()
@@ -90,7 +121,7 @@ public class BetrayingPlatform : MonoBehaviour
             playerTransform.position += delta;
         viTriPlatformTruoc = transform.position;
 
-        if (coXoay && dangDiChuyen)
+        if (coXoay && dangDiChuyen && cheDo != CheDoDidong.XoayBay)
             transform.Rotate(0, 0, tocDoXoay * Time.deltaTime);
     }
 
@@ -332,26 +363,112 @@ public class BetrayingPlatform : MonoBehaviour
     }
 
     // =============================================================
-    // RUNG MÀN HÌNH
+    // RUNG MÀN HÌNH — route qua CameraController để tránh xung đột
     // =============================================================
     IEnumerator RungManHinh()
     {
-        Camera cam = Camera.main;
-        if (cam == null) yield break;
-
-        Vector3 viTriGocCam = cam.transform.position;
-        float daRung = 0f;
-
-        while (daRung < thoiGianRung)
+        CameraController cc = Camera.main?.GetComponent<CameraController>();
+        if (cc != null)
+            yield return StartCoroutine(cc.CoroutineRung(thoiGianRung, doDungManHinh));
+        else
         {
-            float x = viTriGocCam.x + Random.Range(-doDungManHinh, doDungManHinh);
-            float y = viTriGocCam.y + Random.Range(-doDungManHinh, doDungManHinh);
-            cam.transform.position = new Vector3(x, y, viTriGocCam.z);
-            daRung += Time.deltaTime;
+            // Fallback khi không có CameraController
+            Camera cam = Camera.main;
+            if (cam == null) yield break;
+            Vector3 viTriGocCam = cam.transform.position;
+            float daRung = 0f;
+            while (daRung < thoiGianRung)
+            {
+                cam.transform.position = new Vector3(
+                    viTriGocCam.x + Random.Range(-doDungManHinh, doDungManHinh),
+                    viTriGocCam.y + Random.Range(-doDungManHinh, doDungManHinh),
+                    viTriGocCam.z);
+                daRung += Time.deltaTime;
+                yield return null;
+            }
+            cam.transform.position = viTriGocCam;
+        }
+    }
+
+    // =============================================================
+    // XOAY BAY — tự động (khi cheDo = XoayBay)
+    // =============================================================
+    IEnumerator XoayBayTuDong()
+    {
+        if (delayXoayBay > 0)
+            yield return new WaitForSeconds(delayXoayBay);
+        yield return StartCoroutine(ThucHienXoayBay());
+    }
+
+    // =============================================================
+    // XOAY BAY — kích hoạt từ trigger
+    // =============================================================
+    public void KichHoatXoayBay()
+    {
+        StopAllCoroutines();
+        StartCoroutine(XoayBayTuDong());
+    }
+
+    // =============================================================
+    // XOAY BAY — helper xoay một lượt góc
+    // =============================================================
+    IEnumerator XoayMotLuot(float goc, float tocDo)
+    {
+        float daMoi = huongXoay == HuongXoay.NguocKimDongHo ? 1f : -1f;
+        float daDi = 0f;
+        while (daDi < goc)
+        {
+            float buoc = Mathf.Min(tocDo * Time.deltaTime, goc - daDi);
+            transform.Rotate(0, 0, daMoi * buoc);
+            daDi += buoc;
             yield return null;
         }
+    }
 
-        cam.transform.position = viTriGocCam;
+    // =============================================================
+    // XOAY BAY — logic chính: xoay N độ, player đi theo, rồi ở yên / trở về
+    // =============================================================
+    IEnumerator ThucHienXoayBay()
+    {
+        yield return StartCoroutine(ChayHieuUngTruocKhiDi());
+
+        // Gắn player vào tường để xoay cùng
+        if (playerTransform != null)
+            playerTransform.SetParent(transform);
+
+        dangDiChuyen = true;
+        yield return StartCoroutine(XoayMotLuot(gocXoayBay, tocDoXoayBay));
+        dangDiChuyen = false;
+
+        // Tách player — nếu ở đây player còn trên tường thì sẽ rơi theo vật lý
+        if (playerTransform != null)
+        {
+            playerTransform.SetParent(null);
+            playerTransform = null;
+        }
+
+        // --- Sau khi xoay xong ---
+        if (cheDoSauXoay == CheDoSauXoay.TroVeGoc)
+        {
+            // Đợi rồi xoay ngược về
+            if (delayTruocKhiTroVe > 0)
+                yield return new WaitForSeconds(delayTruocKhiTroVe);
+
+            // Đảo hướng để xoay về
+            HuongXoay huongCu = huongXoay;
+            huongXoay = huongXoay == HuongXoay.NguocKimDongHo
+                ? HuongXoay.XuoiKimDongHo
+                : HuongXoay.NguocKimDongHo;
+
+            dangDiChuyen = true;
+            yield return StartCoroutine(XoayMotLuot(gocXoayBay, tocDoXoayVe > 0 ? tocDoXoayVe : tocDoXoayBay));
+            dangDiChuyen = false;
+
+            huongXoay = huongCu; // khôi phục để có thể kích hoạt lại
+        }
+
+        if (phaHuySauKhiDen)
+            yield return StartCoroutine(PhaHuy());
     }
 
     // =============================================================

@@ -871,7 +871,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2226320729445272948, guid: bedff162d8a2f634ba00d30c076da817, type: 3}
       propertyPath: thoiGianMoiDong
-      value: 5
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 2226320729445272948, guid: bedff162d8a2f634ba00d30c076da817, type: 3}
       propertyPath: cacDongThoai.Array.size

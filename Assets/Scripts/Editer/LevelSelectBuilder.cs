@@ -78,26 +78,78 @@ public class LevelSelectBuilder : MonoBehaviour
         rcPhai.anchoredPosition = new Vector2(-20f, 0f);
         btnPhai.AddComponent<CanvasGroup>();
 
-        // === GRID LEVELS ===
+        // === SCROLL VIEW CHO CHƯƠNG SPECIAL ===
+        // Cùng vị trí/kích thước với Grid_Levels để overlap đúng chỗ
+        GameObject scrollView = new GameObject("ScrollView_Special");
+        scrollView.transform.SetParent(canvas.transform, false);
+        RectTransform rcScroll = scrollView.AddComponent<RectTransform>();
+        rcScroll.anchorMin        = new Vector2(0.5f, 0.5f);
+        rcScroll.anchorMax        = new Vector2(0.5f, 0.5f);
+        rcScroll.pivot            = new Vector2(0.5f, 0.5f);
+        rcScroll.sizeDelta        = new Vector2(512f, 248f);
+        rcScroll.anchoredPosition = new Vector2(0f, -20f);
+        scrollView.AddComponent<Image>().color = Color.clear;
+        ScrollRect sr = scrollView.AddComponent<ScrollRect>();
+        sr.horizontal       = false;
+        sr.vertical         = true;
+        sr.scrollSensitivity = 30f;
+        sr.movementType     = ScrollRect.MovementType.Clamped;
+
+        // Viewport — phủ toàn bộ scrollView
+        GameObject viewport = new GameObject("Viewport");
+        viewport.transform.SetParent(scrollView.transform, false);
+        RectTransform rcViewport = viewport.AddComponent<RectTransform>();
+        CaiDatStretchFull(rcViewport);
+        Image vpImg = viewport.AddComponent<Image>();
+        vpImg.color = new Color(0, 0, 0, 0.01f); // gần trong suốt nhưng đủ để Mask hoạt động
+        viewport.AddComponent<Mask>().showMaskGraphic = false;
+        sr.viewport = rcViewport;
+
+        // Content — anchor top, tự giãn theo số cell
+        GameObject content = new GameObject("Content");
+        content.transform.SetParent(viewport.transform, false);
+        RectTransform rcContent = content.AddComponent<RectTransform>();
+        rcContent.anchorMin = new Vector2(0f, 1f);
+        rcContent.anchorMax = new Vector2(1f, 1f);
+        rcContent.pivot     = new Vector2(0.5f, 1f);
+        rcContent.offsetMin = Vector2.zero;
+        rcContent.offsetMax = Vector2.zero;
+        rcContent.sizeDelta = Vector2.zero;
+        content.AddComponent<Image>().color = Color.clear;
+        ContentSizeFitter csf = content.AddComponent<ContentSizeFitter>();
+        csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        GridLayoutGroup glgS = content.AddComponent<GridLayoutGroup>();
+        glgS.cellSize        = new Vector2(116f, 116f);
+        glgS.spacing         = new Vector2(16f, 16f);
+        glgS.constraint      = GridLayoutGroup.Constraint.FixedColumnCount;
+        glgS.constraintCount = 4;
+        glgS.childAlignment  = TextAnchor.UpperCenter;
+        glgS.padding         = new RectOffset(8, 8, 8, 8);
+        sr.content = rcContent;
+
+        scrollView.SetActive(false); // ẩn mặc định
+
+        // === GRID LEVELS — 4 cột × 2 hàng cho ch1-4 ===
+        // 4 × 116 + 3 × 16 = 512  |  2 × 116 + 1 × 16 = 248
         GameObject grid = new GameObject("Grid_Levels");
         grid.transform.SetParent(canvas.transform, false);
         RectTransform rcGrid = grid.AddComponent<RectTransform>();
         rcGrid.anchorMin = new Vector2(0.5f, 0.5f);
         rcGrid.anchorMax = new Vector2(0.5f, 0.5f);
         rcGrid.pivot = new Vector2(0.5f, 0.5f);
-        rcGrid.sizeDelta = new Vector2(560f, 340f);
+        rcGrid.sizeDelta = new Vector2(512f, 248f);
         rcGrid.anchoredPosition = new Vector2(0f, -20f);
         grid.AddComponent<Image>().color = Color.clear;
 
         GridLayoutGroup glg = grid.AddComponent<GridLayoutGroup>();
-        glg.cellSize = new Vector2(96f, 96f);
-        glg.spacing = new Vector2(12f, 12f);
+        glg.cellSize = new Vector2(116f, 116f);
+        glg.spacing = new Vector2(16f, 16f);
         glg.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        glg.constraintCount = 5;
+        glg.constraintCount = 4;
         glg.childAlignment = TextAnchor.MiddleCenter;
 
-        // === 10 NÚT LEVEL ===
-        for (int i = 1; i <= 10; i++)
+        // === 8 NÚT LEVEL ===
+        for (int i = 1; i <= 8; i++)
             TaoLevelCell("LevelCell_" + i, grid.transform, i);
 
         // === NÚT BACK ===
@@ -118,9 +170,12 @@ public class LevelSelectBuilder : MonoBehaviour
         lsm.nutTrai = btnTrai.GetComponent<Button>();
         lsm.nutPhai = btnPhai.GetComponent<Button>();
 
-        lsm.cacNutLevel = new GameObject[10];
-        for (int i = 0; i < 10; i++)
+        lsm.cacNutLevel = new GameObject[8];
+        for (int i = 0; i < 8; i++)
             lsm.cacNutLevel[i] = grid.transform.GetChild(i).gameObject;
+
+        lsm.scrollViewSpecial = scrollView.GetComponent<ScrollRect>();
+        lsm.scrollContent     = content.transform;
 
         btnTrai.GetComponent<Button>().onClick.AddListener(lsm.NutTrai);
         btnPhai.GetComponent<Button>().onClick.AddListener(lsm.NutPhai);
@@ -150,7 +205,7 @@ public class LevelSelectBuilder : MonoBehaviour
         rtSo.anchoredPosition = new Vector2(0f, 10f);
         TextMeshProUGUI tmpSo = txtSo.AddComponent<TextMeshProUGUI>();
         tmpSo.text = soThuTu.ToString();
-        tmpSo.fontSize = 26f;
+        tmpSo.fontSize = 32f;
         tmpSo.color = new Color(0.16f, 0.16f, 0.16f);
         tmpSo.alignment = TextAlignmentOptions.Center;
         tmpSo.fontStyle = FontStyles.Bold;

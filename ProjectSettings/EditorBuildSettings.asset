@@ -15,8 +15,14 @@ EditorBuildSettings:
     path: Assets/Scenes/MainMenu/LevelSelect.unity
     guid: 6a91f4bd5769ea045b2dda4788f46c57
   - enabled: 1
+    path: Assets/Scenes/MainMenu/Achievements.unity
+    guid: 58a49e065844c8b478300064da519fdb
+  - enabled: 1
     path: Assets/Scenes/ChuongSpecial/Level_S_0.unity
     guid: 63ada93e2e425f44db5ce349908bc48c
+  - enabled: 1
+    path: Assets/Scenes/ChuongSpecial/Level_S_1.unity
+    guid: 078ea46870782544a896e011bd2d34e9
   - enabled: 1
     path: Assets/Scenes/Chuong1/Level_1_1.unity
     guid: 1063f3f4aa1894c44ab4a2bc761bdea7
@@ -28,25 +34,25 @@ EditorBuildSettings:
     guid: 2dc6e7fa432ed5e489db7d57c76b55d5
   - enabled: 1
     path: Assets/Scenes/Chuong1/Level_1_4.unity
-    guid: 4927dd6fcd747a744a3fdad252c373fd
-  - enabled: 1
-    path: Assets/Scenes/Chuong1/Level_1_5.unity
     guid: 06ec19a1754c1cc40a9242d9385f0960
   - enabled: 1
-    path: Assets/Scenes/Chuong1/Level_1_6.unity
+    path: Assets/Scenes/Chuong1/Level_1_5.unity
     guid: a7aa0b9142dbc7b4b97b1ccdf7d64200
   - enabled: 1
-    path: Assets/Scenes/Chuong1/Level_1_7.unity
+    path: Assets/Scenes/Chuong1/Level_1_6.unity
     guid: 13a71ce2986f0544fa0009d833215d63
   - enabled: 1
-    path: Assets/Scenes/Chuong1/Level_1_8.unity
+    path: Assets/Scenes/Chuong1/Level_1_7.unity
     guid: 86a7203919eaba94fa07e5a6bf5c80a3
   - enabled: 1
-    path: Assets/Scenes/Chuong1/Level_1_9.unity
+    path: Assets/Scenes/Chuong1/Level_1_8.unity
     guid: de28e5eba2abd0d41a43a470bb1c9bca
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Chuong1/Level_1_10.unity
-    guid: 078ea46870782544a896e011bd2d34e9
+    guid: 7970cb05437042d46a5dabd57a43da6b
+  - enabled: 0
+    path: Assets/Scenes/Chuong1/Level_1_11.unity
+    guid: 4927dd6fcd747a744a3fdad252c373fd
   - enabled: 1
     path: Assets/Scenes/Chuong2/Level_2_1.unity
     guid: f3ca31f3a13475d4b9c6f91022ce0172
@@ -65,6 +71,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Chuong2/Level_2_6.unity
     guid: f1eb2f228f15872468f86cb812982117
+  - enabled: 1
+    path: Assets/Scenes/Chuong2/Level_2_7.unity
+    guid: 76b91cbc79620e54c914a8c35c1d6026
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

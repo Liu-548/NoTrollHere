@@ -49,14 +49,32 @@ public class SettingsMenu : MonoBehaviour
     // === NÚT SETTINGS (gắn vào Btn_Settings ở Main Menu) ===
     public void NutMoSettings()
     {
+        TimPanelNeuChua();
         if (panelSettings != null)
             panelSettings.SetActive(true);
+        else
+            Debug.LogWarning("[SettingsMenu] panelSettings chưa gán! " +
+                "Gán Panel_Settings vào field panelSettings trong Inspector.");
     }
 
     public void NutDongSettings()
     {
         if (panelSettings != null)
             panelSettings.SetActive(false);
+    }
+
+    void TimPanelNeuChua()
+    {
+        if (panelSettings != null) return;
+        // Tự tìm panel con tên Panel_Settings
+        Transform found = transform.Find("Panel_Settings");
+        if (found == null)
+        {
+            // Tìm trong toàn scene
+            var go = GameObject.Find("Panel_Settings");
+            if (go != null) panelSettings = go;
+        }
+        else panelSettings = found.gameObject;
     }
 
     // === SLIDER / TOGGLE EVENTS ===

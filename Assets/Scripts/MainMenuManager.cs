@@ -46,11 +46,16 @@ public class MainMenuManager : MonoBehaviour
             SceneManager.LoadScene(tenSceneLevelSelect)));
     }
 
-    // === NÚT SETTINGS (placeholder) ===
+    // === NÚT SETTINGS ===
     public void NutSettings()
     {
-        if (SettingsMenu.instance != null)
-            SettingsMenu.instance.NutMoSettings();
+        SettingsMenu sm = SettingsMenu.instance;
+        if (sm == null) sm = FindFirstObjectByType<SettingsMenu>();
+        if (sm != null)
+            sm.NutMoSettings();
+        else
+            Debug.LogWarning("[MainMenu] Không tìm thấy SettingsMenu trong scene!" +
+                " Hãy thêm GameObject có SettingsMenu component vào scene MainMenu.");
     }
 
     // === NÚT QUIT ===
@@ -99,5 +104,12 @@ public class MainMenuManager : MonoBehaviour
         Time.timeScale = 1f;
         StartCoroutine(FadeOutRoi(() =>
             SceneManager.LoadScene("SkinSelect")));
+    }
+
+    public void NutThanhTuu()
+    {
+        Time.timeScale = 1f;
+        StartCoroutine(FadeOutRoi(() =>
+            SceneManager.LoadScene("Achievements")));
     }
 }

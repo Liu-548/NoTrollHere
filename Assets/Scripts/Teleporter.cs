@@ -21,18 +21,21 @@ public class Teleporter : MonoBehaviour
 
     void TaoFadePanel()
     {
-        Canvas canvas = FindObjectOfType<Canvas>();
-        if (canvas == null)
-        {
-            GameObject canvasObj = new GameObject("FadeCanvas");
-            canvas = canvasObj.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 999;
-        }
+        // Tạo Canvas riêng có sorting order cao — tránh đặt trong Canvas game
+        // để không chặn raycast của UI game
+        GameObject canvasObj = new GameObject("FadeCanvas_Teleport");
+        Canvas canvas = canvasObj.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 999;
+        canvasObj.AddComponent<UnityEngine.UI.CanvasScaler>();
+        // KHÔNG thêm GraphicRaycaster → panel này không nhận và không chặn input
+        DontDestroyOnLoad(canvasObj);
+
         GameObject panel = new GameObject("FadePanel");
         panel.transform.SetParent(canvas.transform, false);
         fadeImage = panel.AddComponent<Image>();
         fadeImage.color = new Color(0, 0, 0, 0);
+        fadeImage.raycastTarget = false; // KHÔNG chặn click khi trong suốt
         RectTransform rect = panel.GetComponent<RectTransform>();
         rect.anchorMin = Vector2.zero;
         rect.anchorMax = Vector2.one;

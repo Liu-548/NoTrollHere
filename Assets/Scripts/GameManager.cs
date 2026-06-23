@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 
 public class GameManager : MonoBehaviour
 {
@@ -9,9 +10,7 @@ public class GameManager : MonoBehaviour
     private int tongSoLanChetSession = 0;
 
     [Header("=== CẤU HÌNH LEVEL ===")]
-    public int soManMoiChuong = 9;
-    // Màn 1-9 để thắng chương, màn 10 là đặc biệt
-    public int soManChuong1 = 10;
+    public int soManMoiChuong = 8; // Mỗi chương có 8 màn, qua hết → mở chương tiếp
     public string tenSceneTutorial = "Level_S_0";
     public string tenSceneMainMenu = "MainMenu";
     public string tenSceneLevelSelect = "LevelSelect";
@@ -30,37 +29,79 @@ public class GameManager : MonoBehaviour
             return;
         }
         KhoiTaoUnlock();
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // Mỗi scene tự có EventSystem riêng — chỉ tạo nếu scene không có
+        DamBaoCoEventSystem();
     }
 
     void DamBaoCoEventSystem()
     {
-        // Nếu chưa có EventSystem nào → tạo mới
-        var es = FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>();
-        if (es == null)
+        var tatCaES = FindObjectsByType<EventSystem>(FindObjectsSortMode.None);
+
+        if (tatCaES.Length == 0)
         {
+            // Scene không có EventSystem → tạo mới cho scene này (KHÔNG DontDestroyOnLoad)
             GameObject goES = new GameObject("EventSystem");
-            goES.AddComponent<UnityEngine.EventSystems.EventSystem>();
-            goES.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
-            DontDestroyOnLoad(goES);
-            Debug.Log("Đã tạo EventSystem mới");
+            goES.AddComponent<EventSystem>();
+            goES.AddComponent<StandaloneInputModule>();
+            Debug.Log($"[GameManager] Tạo EventSystem cho scene: {SceneManager.GetActiveScene().name}");
         }
-        else
+        else if (tatCaES.Length > 1)
         {
-            // Giữ EventSystem hiện tại xuyên scene
-            DontDestroyOnLoad(es.gameObject);
+            // Có nhiều hơn 1 → giữ cái thuộc scene hiện tại, xóa các cái từ DDOL
+            Scene activeScene = SceneManager.GetActiveScene();
+            EventSystem giuLai = null;
+
+            // Ưu tiên giữ cái thuộc scene đang active
+            foreach (var es in tatCaES)
+                if (es.gameObject.scene == activeScene) { giuLai = es; break; }
+
+            // Fallback: giữ cái đầu tiên
+            if (giuLai == null) giuLai = tatCaES[0];
+
+            foreach (var es in tatCaES)
+            {
+                if (es != giuLai)
+                {
+                    Debug.Log($"[GameManager] Xóa EventSystem thừa: {es.gameObject.name} (scene: {es.gameObject.scene.name})");
+                    Destroy(es.gameObject);
+                }
+            }
         }
     }
 
     void KhoiTaoUnlock()
     {
-        if (PlayerPrefs.GetInt("Level_1_1_unlocked", 0) == 0)
+        // Lần đầu chơi (chưa có bất kỳ unlock nào) → tutorial trước
+        bool coSaveNao = PlayerPrefs.HasKey("Level_S_0_unlocked")
+                      || PlayerPrefs.HasKey("Level_1_1_unlocked");
+
+        if (!coSaveNao)
         {
-            PlayerPrefs.SetInt("Level_1_1_unlocked", 1);
+            // Lần đầu tiên: chỉ mở Level_S_0 (Tutorial)
+            PlayerPrefs.SetInt("Level_S_0_unlocked", 1);
+            PlayerPrefs.SetString("LatestLevel", "Level_S_0");
             PlayerPrefs.Save();
         }
-        if (!PlayerPrefs.HasKey("LatestLevel"))
+        else
         {
-            PlayerPrefs.SetString("LatestLevel", "Level_1_1");
+            // Save cũ chưa có S_0 unlock → thêm vào (compat)
+            if (PlayerPrefs.GetInt("Level_S_0_unlocked", 0) == 0)
+                PlayerPrefs.SetInt("Level_S_0_unlocked", 1);
+
+            // Đảm bảo luôn có LatestLevel
+            if (!PlayerPrefs.HasKey("LatestLevel"))
+                PlayerPrefs.SetString("LatestLevel", "Level_1_1");
+
             PlayerPrefs.Save();
         }
     }
@@ -87,8 +128,9 @@ public class GameManager : MonoBehaviour
         if (PauseMenu.instance != null)
             PauseMenu.instance.ThemMotLanChet();
 
+        // Chỉ check milestone — KHÔNG reset streak (streak do KillZone quản lý)
         if (AchievementManager.instance != null)
-            AchievementManager.instance.KiemTraSauKhiChet("");
+            AchievementManager.instance.KiemTraMilestonesChet();
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
@@ -120,67 +162,66 @@ public class GameManager : MonoBehaviour
 
     // =============================================================
     // KIỂM TRA MỞ CHƯƠNG TIẾP THEO
-    // Logic: thắng màn 1-9 của chương X → mở màn 10 (đặc biệt)
-    //        thắng màn 10 → mở chương tiếp theo
+    // Logic: mỗi chương có 8 màn, pass đủ 8 → mở chương tiếp
+    //        Chương Special (S) không giới hạn, không trigger unlock
     // =============================================================
     void KiemTraMoChuongTiepTheo(string tenManHienTai)
     {
-        // Parse tên màn — format: Level_X_Y
-        // X = số chương, Y = số màn
         if (!tenManHienTai.StartsWith("Level_")) return;
-
         string[] parts = tenManHienTai.Split('_');
         if (parts.Length < 3) return;
 
-        // Xử lý chương Special riêng
-        if (parts[1] == "S") return;
+        // Chương Special
+        if (parts[1] == "S")
+        {
+            // Level_S_0 (Tutorial) xong → unlock Level_1_1
+            if (parts[2] == "0")
+            {
+                PlayerPrefs.SetInt("Level_1_1_unlocked", 1);
+                PlayerPrefs.Save();
+                Debug.Log("[GameManager] Tutorial xong → Mở Level_1_1");
+            }
+            return;
+        }
 
         if (!int.TryParse(parts[1], out int soChuong)) return;
         if (!int.TryParse(parts[2], out int soMan)) return;
 
-        // Kiểm tra đã pass màn 1-9 của chương này chưa
-        if (soMan == soManMoiChuong)
+        // Chỉ kiểm tra khi vừa xong màn cuối (màn 8)
+        if (soMan != soManMoiChuong) return;
+
+        // Kiểm tra tất cả 1 → soManMoiChuong đã pass
+        bool hoanThanhChuong = true;
+        for (int i = 1; i <= soManMoiChuong; i++)
         {
-            // Đã pass màn 9 → kiểm tra tất cả 1-9 đã pass chưa
-            bool hoanThanhChuong = true;
-            for (int i = 1; i <= soManMoiChuong; i++)
-            {
-                string key = $"Level_{soChuong}_{i}_passed";
-                if (PlayerPrefs.GetInt(key, 0) == 0)
-                {
-                    hoanThanhChuong = false;
-                    break;
-                }
-            }
-
-            if (hoanThanhChuong)
-            {
-                // Mở màn 10 (đặc biệt) của chương này
-                string man10 = $"Level_{soChuong}_10";
-                PlayerPrefs.SetInt(man10 + "_unlocked", 1);
-                PlayerPrefs.Save();
-                Debug.Log($"Mở màn đặc biệt: {man10}");
-
-                // Nếu là chương 1 → mở chương Special
-                if (soChuong == 1)
-                {
-                    PlayerPrefs.SetInt("Chapter_Special_unlocked", 1);
-                    PlayerPrefs.SetInt(tenSceneTutorial + "_unlocked", 1);
-                    PlayerPrefs.Save();
-                    Debug.Log("Chương Special đã mở!");
-                }
-            }
+            if (PlayerPrefs.GetInt($"Level_{soChuong}_{i}_passed", 0) == 0)
+            { hoanThanhChuong = false; break; }
         }
 
-        // Thắng màn 10 → mở chương tiếp theo
-        if (soMan == 10)
+        if (!hoanThanhChuong)
         {
-            int chuongTiep = soChuong + 1;
-            string man1ChuongTiep = $"Level_{chuongTiep}_1";
-            PlayerPrefs.SetInt(man1ChuongTiep + "_unlocked", 1);
-            PlayerPrefs.Save();
-            Debug.Log($"Mở chương {chuongTiep}: {man1ChuongTiep}");
+            Debug.Log($"[GameManager] Ch{soChuong} màn {soMan} xong nhưng chưa pass đủ {soManMoiChuong} màn.");
+            return;
         }
+
+        // Mở màn 1 chương tiếp theo
+        int chuongTiep = soChuong + 1;
+        string man1ChuongTiep = $"Level_{chuongTiep}_1";
+        PlayerPrefs.SetInt(man1ChuongTiep + "_unlocked", 1);
+
+        // Chương 1 hoàn thành → mở Special chapter + tutorial
+        if (soChuong == 1)
+        {
+            PlayerPrefs.SetInt("Chapter_Special_unlocked", 1);
+            PlayerPrefs.SetInt(tenSceneTutorial + "_unlocked", 1);
+            Debug.Log("[GameManager] Ch1 8/8 xong → Mở Ch2 + Special chapter");
+        }
+        else
+        {
+            Debug.Log($"[GameManager] Ch{soChuong} 8/8 xong → Mở Level_{chuongTiep}_1");
+        }
+
+        PlayerPrefs.Save();
     }
 
     // =============================================================

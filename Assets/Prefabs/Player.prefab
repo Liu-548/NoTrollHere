@@ -87,12 +87,12 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -13559271439482278, guid: 3a1827d9a177b6a459eb3c949593005f, type: 3}
-  m_Color: {r: 0.9098039, g: 0.9098039, b: 0.8156863, a: 1}
+  m_Sprite: {fileID: 4220943108348763703, guid: d0a41b95df6b4ac4da4ffe763b475cec, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.07, y: 0.15}
+  m_Size: {x: 0.5625, y: 0.9375}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -158,17 +158,17 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.028675318, y: 0.06200087}
+  m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 0.75, y: 1}
-    newSize: {x: 0.07, y: 0.15}
+    oldSize: {x: 0.5625, y: 0.9375}
+    newSize: {x: 0.5625, y: 0.9375}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.44344807, y: 0.88139963}
+  m_Size: {x: 0.5, y: 0.875}
   m_EdgeRadius: 0
 --- !u!114 &7755286843297599555
 MonoBehaviour:
@@ -183,10 +183,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   tocDoChay: 6
+  heSoTocDoNgoi: 0.5
   lucNhay: 10
   trongLucRoi: 4
   trongLucNhay: 2
   thoiGianGiuNhayToiDa: 0.2
+  nutTrai: 97
+  nutPhai: 100
+  nutNhayLeo: 119
+  nutXuongNgoi: 115
+  spaceGanScript: 0
+  onSpacePressed:
+    m_PersistentCalls:
+      m_Calls: []
   layerMatDat:
     serializedVersion: 2
     m_Bits: 64

@@ -49,35 +49,36 @@ public class DeathEffect : MonoBehaviour
         yield return new WaitForSeconds(thoiGianFlash);
         spriteRenderer.color = mauGoc;
 
-        // Screen shake
-        StartCoroutine(RungCamera());
-        yield return new WaitForSeconds(thoiGianRung);
+        // Screen shake — route qua CameraController để tránh xung đột
+        CameraController cc = Camera.main?.GetComponent<CameraController>();
+        if (cc != null)
+            yield return StartCoroutine(cc.CoroutineRung(thoiGianRung, doDungCamera));
+        else
+        {
+            // Fallback khi không có CameraController
+            Camera cam = Camera.main;
+            if (cam != null)
+            {
+                Vector3 viTriGoc = cam.transform.position;
+                float daRung = 0f;
+                while (daRung < thoiGianRung)
+                {
+                    cam.transform.position = new Vector3(
+                        viTriGoc.x + Random.Range(-doDungCamera, doDungCamera),
+                        viTriGoc.y + Random.Range(-doDungCamera, doDungCamera),
+                        viTriGoc.z);
+                    daRung += Time.deltaTime;
+                    yield return null;
+                }
+                cam.transform.position = viTriGoc;
+            }
+            else
+                yield return new WaitForSeconds(thoiGianRung);
+        }
 
-        // Reset Rigidbody trước khi reload
-        // (không cần thiết vì scene reload nhưng cho sạch)
         if (rb != null)
             rb.bodyType = RigidbodyType2D.Dynamic;
 
         GameManager.instance.PlayerChet();
-    }
-
-    IEnumerator RungCamera()
-    {
-        Camera cam = Camera.main;
-        if (cam == null) yield break;
-
-        Vector3 viTriGoc = cam.transform.position;
-        float thoiGianDaRung = 0f;
-
-        while (thoiGianDaRung < thoiGianRung)
-        {
-            float x = viTriGoc.x + Random.Range(-doDungCamera, doDungCamera);
-            float y = viTriGoc.y + Random.Range(-doDungCamera, doDungCamera);
-            cam.transform.position = new Vector3(x, y, viTriGoc.z);
-            thoiGianDaRung += Time.deltaTime;
-            yield return null;
-        }
-
-        cam.transform.position = viTriGoc;
     }
 }

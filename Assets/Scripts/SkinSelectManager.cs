@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 using TMPro;
 using System.Collections.Generic;
 
@@ -14,6 +15,7 @@ public class SkinSelectManager : MonoBehaviour
     public Button nutTrai;
     public Button nutPhai;
     public Button nutChon;
+    public Button nutBack;
     public Image[] cacDot;
 
     [Header("=== CÀI ĐẶT ===")]
@@ -36,6 +38,32 @@ public class SkinSelectManager : MonoBehaviour
         }
 
         danhSach = SkinManager.instance.LayDanhSach();
+
+        // TMP text mặc định có raycastTarget = true → chặn click nút bên dưới
+        if (txtTenSkin   != null) txtTenSkin.raycastTarget   = false;
+        if (txtMoTa      != null) txtMoTa.raycastTarget      = false;
+        if (txtDieuKien  != null) txtDieuKien.raycastTarget  = false;
+
+        // Tự wire lại tất cả buttons theo tên — bỏ qua giá trị Inspector để tránh gán sai
+        var canvas = FindFirstObjectByType<Canvas>();
+        if (canvas != null)
+        {
+            foreach (var btn in canvas.GetComponentsInChildren<Button>(true))
+            {
+                switch (btn.gameObject.name)
+                {
+                    case "Btn_Trai": nutTrai = btn; break;
+                    case "Btn_Phai": nutPhai = btn; break;
+                    case "Btn_Chon": nutChon = btn; break;
+                    case "Btn_Back": nutBack = btn; break;
+                }
+            }
+        }
+
+        WireButton(nutTrai, NutTrai);
+        WireButton(nutPhai, NutPhai);
+        WireButton(nutChon, NutChon);
+        WireButton(nutBack, NutBack);
 
         string skinDangDung = SkinManager.instance.LaySkinDangDung();
         indexHienTai = danhSach.FindIndex(s => s.id == skinDangDung);
@@ -76,13 +104,15 @@ public class SkinSelectManager : MonoBehaviour
         {
             if (skin.daUnlock)
             {
-                bool dangDung = SkinManager.instance.LaySkinDangDung() == skin.id;
-                txtDieuKien.text = dangDung ? "Đang dùng" : "";
+                string dangDungId = SkinManager.instance != null
+                    ? SkinManager.instance.LaySkinDangDung()
+                    : "";
+                txtDieuKien.text = dangDungId == skin.id ? "Đang dùng" : "";
                 txtDieuKien.color = new Color(0.96f, 0.78f, 0.26f);
             }
             else
             {
-                txtDieuKien.text = "🔒 " + skin.dieuKienMo;
+                txtDieuKien.text = skin.dieuKienMo;
                 txtDieuKien.color = new Color(0.3f, 0.3f, 0.3f);
             }
         }
@@ -111,36 +141,59 @@ public class SkinSelectManager : MonoBehaviour
             bool coTrai = idx > 0;
             nutTrai.interactable = coTrai;
             CanvasGroup cg = nutTrai.GetComponent<CanvasGroup>();
-            if (cg != null) cg.alpha = coTrai ? 1f : 0.25f;
+            if (cg != null)
+                cg.alpha = coTrai ? 1f : 0.25f;
+            // blocksRaycasts không dùng — alpha propagation ảnh hưởng con nếu có
         }
         if (nutPhai != null)
         {
             bool coPhai = idx < danhSach.Count - 1;
             nutPhai.interactable = coPhai;
             CanvasGroup cg = nutPhai.GetComponent<CanvasGroup>();
-            if (cg != null) cg.alpha = coPhai ? 1f : 0.25f;
+            if (cg != null)
+                cg.alpha = coPhai ? 1f : 0.25f;
         }
     }
 
     void CapNhatDots(int idx)
     {
-        if (cacDot == null) return;
-        for (int i = 0; i < cacDot.Length; i++)
+        if (cacDot == null || cacDot.Length == 0 || danhSach == null) return;
+
+        int total      = danhSach.Count;
+        int soHienThi  = cacDot.Length; // thường là 5
+
+        // Cửa sổ cuộn: căn giữa idx, kẹp cạnh
+        int start = Mathf.Clamp(idx - soHienThi / 2, 0, Mathf.Max(0, total - soHienThi));
+
+        for (int i = 0; i < soHienThi; i++)
         {
             if (cacDot[i] == null) continue;
-            if (i >= danhSach.Count)
+            int skinIdx = start + i;
+
+            if (skinIdx >= total)
             {
                 cacDot[i].gameObject.SetActive(false);
                 continue;
             }
             cacDot[i].gameObject.SetActive(true);
 
-            if (i == idx)
+            if (skinIdx == idx)
                 cacDot[i].color = mauDotActive;
-            else if (danhSach[i].daUnlock)
+            else if (danhSach[skinIdx].daUnlock)
                 cacDot[i].color = mauDotInactive;
             else
                 cacDot[i].color = mauDotLock;
+        }
+    }
+
+    void WireButton(Button btn, UnityEngine.Events.UnityAction action)
+    {
+        if (btn == null) return;
+        // Nếu đã có persistent listener → không thêm runtime để tránh gọi 2 lần
+        if (btn.onClick.GetPersistentEventCount() == 0)
+        {
+            btn.onClick.RemoveAllListeners();
+            btn.onClick.AddListener(action);
         }
     }
 

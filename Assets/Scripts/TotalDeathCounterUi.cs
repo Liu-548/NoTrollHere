@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using TMPro;
 
 public class TotalDeathCounterUI : MonoBehaviour
@@ -7,8 +7,10 @@ public class TotalDeathCounterUI : MonoBehaviour
 
     void Update()
     {
-        if (GameManager.instance == null) return;
-        deathText.text = "DEATHS THIS SESSION : "
-            + GameManager.instance.LayTongSoLanChetTatCa();
+        if (deathText == null) return;
+
+        // Đọc thẳng từ PlayerPrefs — không phụ thuộc GameManager.instance
+        int tongChet = PlayerPrefs.GetInt("Deaths_Total", 0);
+        deathText.text = "TOTAL DEATHS : " + tongChet;
     }
 }

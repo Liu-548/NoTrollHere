@@ -154,9 +154,9 @@ public class SkinSelectBuilder : MonoBehaviour
         hlg.childForceExpandHeight = false;
         dots.AddComponent<Image>().color = Color.clear;
 
-        // Tạo 8 chấm (8 skin)
-        GameObject[] cacDot = new GameObject[8];
-        for (int i = 0; i < 8; i++)
+        // Tạo 5 chấm (cửa sổ cuộn — hỗ trợ bất kỳ số lượng skin)
+        GameObject[] cacDot = new GameObject[5];
+        for (int i = 0; i < 5; i++)
         {
             GameObject dot = new GameObject("Dot_" + i);
             dot.transform.SetParent(dots.transform, false);
@@ -181,8 +181,9 @@ public class SkinSelectBuilder : MonoBehaviour
         ssm.nutTrai = btnTrai.GetComponent<Button>();
         ssm.nutPhai = btnPhai.GetComponent<Button>();
         ssm.nutChon = btnChon.GetComponent<Button>();
-        ssm.cacDot = new Image[8];
-        for (int i = 0; i < 8; i++)
+        ssm.nutBack = btnBack.GetComponent<Button>();
+        ssm.cacDot = new Image[5];
+        for (int i = 0; i < 5; i++)
             ssm.cacDot[i] = cacDot[i].GetComponent<Image>();
 
         btnTrai.GetComponent<Button>().onClick.AddListener(ssm.NutTrai);

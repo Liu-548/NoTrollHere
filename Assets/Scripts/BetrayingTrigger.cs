@@ -4,8 +4,9 @@ public class BetrayingTrigger : MonoBehaviour
 {
     public enum CheDoTrigger
     {
-        DiDenOffset,   // Trigger đẩy platform đến 1 điểm offset (cũ)
-        BatDauWaypoint // Trigger kích hoạt chạy waypoint
+        DiDenOffset,   // Trigger đẩy platform đến 1 điểm offset
+        BatDauWaypoint, // Trigger kích hoạt chạy waypoint
+        XoayBay        // Trigger kích hoạt xoay N độ rồi đẩy player xuống vực
     }
 
     [Header("=== CHẾ ĐỘ TRIGGER ===")]
@@ -45,6 +46,8 @@ public class BetrayingTrigger : MonoBehaviour
             platform.KichHoat(offset, tocDo);
         else if (cheDoTrigger == CheDoTrigger.BatDauWaypoint)
             platform.KichHoatWaypoint(batDauTuWaypoint);
+        else if (cheDoTrigger == CheDoTrigger.XoayBay)
+            platform.KichHoatXoayBay();
     }
 
     void OnDrawGizmos()
@@ -61,15 +64,23 @@ public class BetrayingTrigger : MonoBehaviour
             Gizmos.DrawWireSphere(diemDen, 0.12f);
             Gizmos.DrawLine(transform.position, diemDen);
         }
-        else
+        else if (cheDoTrigger == CheDoTrigger.BatDauWaypoint)
         {
-            // Hiển thị điểm bắt đầu waypoint
             Gizmos.color = Color.magenta;
             Gizmos.DrawWireSphere(transform.position, 0.12f);
 #if UNITY_EDITOR
             UnityEditor.Handles.Label(
                 transform.position + Vector3.up * 0.3f,
                 $"→ WP{batDauTuWaypoint}");
+#endif
+        }
+        else if (cheDoTrigger == CheDoTrigger.XoayBay)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(transform.position, 0.12f);
+#if UNITY_EDITOR
+            UnityEditor.Handles.Label(
+                transform.position + Vector3.up * 0.3f, "⟳ XoayBay");
 #endif
         }
     }

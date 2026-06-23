@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 public class CameraController : MonoBehaviour
 {
@@ -85,6 +86,48 @@ public class CameraController : MonoBehaviour
         transform.position = Vector3.Lerp(
             viTriCamHienTai, viTriMucTieu,
             tocDoTheoDoi * Time.deltaTime);
+    }
+
+    // =============================================================
+    // CAMERA SHAKE — tập trung tại đây, tránh xung đột
+    // =============================================================
+    private bool dangRung = false;
+
+    public static void RungManHinhStatic(float thoiGian, float doDung)
+    {
+        CameraController cc = Camera.main?.GetComponent<CameraController>();
+        if (cc != null)
+            cc.StartCoroutine(cc.CoroutineRung(thoiGian, doDung));
+        else
+        {
+            // Fallback khi không có CameraController — rung trực tiếp
+            Camera cam = Camera.main;
+            if (cam != null)
+            {
+                // Không thể dùng coroutine static, skip
+                Debug.LogWarning("CameraController: không tìm thấy để rung màn hình");
+            }
+        }
+    }
+
+    public IEnumerator CoroutineRung(float thoiGian, float doDung)
+    {
+        if (dangRung) yield break; // Tránh chồng chất nhiều shake
+        dangRung = true;
+
+        float daRung = 0f;
+        while (daRung < thoiGian)
+        {
+            // Thêm offset vào viTriMucTieu thay vì thao tác transform trực tiếp
+            viTriMucTieu += new Vector3(
+                Random.Range(-doDung, doDung),
+                Random.Range(-doDung, doDung),
+                0f);
+            daRung += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        dangRung = false;
     }
 
     void OnDrawGizmos()

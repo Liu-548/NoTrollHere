@@ -89,6 +89,8 @@ public class MainMenuBuilder : MonoBehaviour
             "Level Select", "1A1A1A", "E8E8D0", 44f, false);
         GameObject btnSkins = TaoNut("Btn_Skins", panelCenter.transform,
             "Skins", "1A1A1A", "E8E8D0", 44f, false);
+        GameObject btnAchievements = TaoNut("Btn_Achievements", panelCenter.transform,
+            "Achievements", "1A1A1A", "E8E8D0", 44f, false);
         GameObject btnSettings = TaoNut("Btn_Settings", panelCenter.transform,
             "Settings", "1A1A1A", "888888", 40f, false, true);
 
@@ -164,6 +166,7 @@ public class MainMenuBuilder : MonoBehaviour
         btnPlay.GetComponent<Button>().onClick.AddListener(mm.NutPlay);
         btnLevel.GetComponent<Button>().onClick.AddListener(mm.NutLevelSelect);
         btnSkins.GetComponent<Button>().onClick.AddListener(mm.NutSkinSelect);
+        btnAchievements.GetComponent<Button>().onClick.AddListener(mm.NutThanhTuu);
         btnSettings.GetComponent<Button>().onClick.AddListener(sm.NutMoSettings);
         btnClose.GetComponent<Button>().onClick.AddListener(sm.NutDongSettings);
         sliderSFXGO.GetComponent<Slider>().onValueChanged

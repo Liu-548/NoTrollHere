@@ -109,32 +109,36 @@ public class TrapManager : MonoBehaviour
         if (rungManHinhKhiKichHoat)
             yield return StartCoroutine(RungManHinh());
 
-        KichHoatTatCaBayCon();
-
         if (delayTruocKhiDi > 0)
             yield return new WaitForSeconds(delayTruocKhiDi);
 
         switch (cheDo)
         {
             case CheDoSauKhiKichHoat.DiChuyen:
+                // Kích hoạt hành vi bẫy con (ví dụ HiddenSpike mọc lên trong lúc di chuyển)
+                KichHoatTatCaBayCon();
                 yield return StartCoroutine(DiChuyenDan());
                 break;
 
             case CheDoSauKhiKichHoat.Teleport:
+                // Chỉ dịch chuyển position — bẫy con tự kích hoạt bằng trigger riêng khi player chạm
                 TeleportNgay();
                 break;
 
             case CheDoSauKhiKichHoat.PhaHuy:
+                KichHoatTatCaBayCon();
                 yield return StartCoroutine(PhaHuyTatCa());
                 break;
 
             case CheDoSauKhiKichHoat.DiRoiPha:
+                KichHoatTatCaBayCon();
                 yield return StartCoroutine(DiChuyenDan());
                 yield return new WaitForSeconds(delayPhaHuy);
                 yield return StartCoroutine(PhaHuyTatCa());
                 break;
 
             case CheDoSauKhiKichHoat.TeleportRoiPha:
+                // Teleport trước, sau đó phá hủy — cũng không kích hoạt hành vi con
                 TeleportNgay();
                 yield return new WaitForSeconds(delayPhaHuy);
                 yield return StartCoroutine(PhaHuyTatCa());
@@ -149,11 +153,9 @@ public class TrapManager : MonoBehaviour
             if (script == null) continue;
 
             if (script is HiddenSpike hs)
-                hs.SendMessage("MocLen",
-                    SendMessageOptions.DontRequireReceiver);
+                hs.KichHoat();
             else if (script is WallSpike ws)
-                ws.SendMessage("Ban",
-                    SendMessageOptions.DontRequireReceiver);
+                ws.KichHoatBan();
             else if (script is FallingBrick fb)
                 fb.KichHoatRoi();
             else if (script is BetrayingPlatform bp)
@@ -243,22 +245,26 @@ public class TrapManager : MonoBehaviour
 
     IEnumerator RungManHinh()
     {
-        Camera cam = Camera.main;
-        if (cam == null) yield break;
-
-        Vector3 goc = cam.transform.position;
-        float daRung = 0f;
-
-        while (daRung < thoiGianRung)
+        CameraController cc = Camera.main?.GetComponent<CameraController>();
+        if (cc != null)
+            yield return StartCoroutine(cc.CoroutineRung(thoiGianRung, doDung));
+        else
         {
-            cam.transform.position = new Vector3(
-                goc.x + Random.Range(-doDung, doDung),
-                goc.y + Random.Range(-doDung, doDung),
-                goc.z);
-            daRung += Time.deltaTime;
-            yield return null;
+            Camera cam = Camera.main;
+            if (cam == null) yield break;
+            Vector3 goc = cam.transform.position;
+            float daRung = 0f;
+            while (daRung < thoiGianRung)
+            {
+                cam.transform.position = new Vector3(
+                    goc.x + Random.Range(-doDung, doDung),
+                    goc.y + Random.Range(-doDung, doDung),
+                    goc.z);
+                daRung += Time.deltaTime;
+                yield return null;
+            }
+            cam.transform.position = goc;
         }
-        cam.transform.position = goc;
     }
 
     void OnDrawGizmos()

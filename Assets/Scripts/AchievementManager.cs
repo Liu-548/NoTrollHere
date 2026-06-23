@@ -17,15 +17,17 @@ public class AchievementManager : MonoBehaviour
         public string nhanXet; // câu hài hước hiện khi đạt
         public string skinMo;  // skin mở kèm (nếu có)
         public bool daUnlock;
+        public bool anDi;      // thành tựu ẩn — hiện ??? cho đến khi mở
 
         public ThanhTuu(string id, string ten, string moTa,
-            string nhanXet, string skinMo = "")
+            string nhanXet, string skinMo = "", bool anDi = false)
         {
             this.id = id;
             this.ten = ten;
             this.moTa = moTa;
             this.nhanXet = nhanXet;
             this.skinMo = skinMo;
+            this.anDi = anDi;
             this.daUnlock = PlayerPrefs.GetInt("ACH_" + id, 0) == 1;
         }
     }
@@ -77,48 +79,26 @@ public class AchievementManager : MonoBehaviour
             ""
         ));
 
-        // === HOÀN THÀNH CHƯƠNG (1-9) ===
+        // === HOÀN THÀNH CHƯƠNG (8 màn) ===
+        string[] tenChuong  = { "", "NoWhere", "The Forest", "The Volcano", "The Abyss" };
+        string[] nhanXetCh  = {
+            "",
+            "Vậy là bạn đã sống sót qua NoWhere. Chúc mừng... tạm thời.",
+            "Rừng không giết được bạn. Nhưng tôi vẫn còn nhiều ý tưởng.",
+            "Núi lửa thất bại. Tôi thất vọng.",
+            "Vực thẳm cũng không đủ. Bạn là ai vậy?"
+        };
+        string[] skinChuong = { "", "Forest", "Ember", "Void", "Golden" };
+
         for (int ch = 1; ch <= 4; ch++)
         {
             int chuong = ch;
-            string[] tenChuong = { "", "NoWhere", "The Forest", "The Volcano", "The Abyss" };
-            string[] nhanXet = {
-                "",
-                "Vậy là bạn đã sống sót qua NoWhere. Chúc mừng... tạm thời.",
-                "Rừng không giết được bạn. Nhưng tôi vẫn còn nhiều ý tưởng.",
-                "Núi lửa thất bại. Tôi thất vọng.",
-                "Vực thẳm cũng không đủ. Bạn là ai vậy?"
-            };
-            string[] skinChuong = { "", "Forest", "Ember", "Void", "" };
-
             danhSach.Add(new ThanhTuu(
-                $"CLEAR_CH{chuong}_1TO9",
+                $"CLEAR_CH{chuong}",
                 $"Chapter {chuong} Complete",
-                $"Hoàn thành Chapter {chuong} — {tenChuong[chuong]} (màn 1-9)",
-                nhanXet[chuong],
+                $"Hoàn thành Chapter {chuong} — {tenChuong[chuong]} (8 màn)",
+                nhanXetCh[chuong],
                 skinChuong[chuong]
-            ));
-        }
-
-        // === HOÀN THÀNH MÀN 10 (boss) ===
-        for (int ch = 1; ch <= 4; ch++)
-        {
-            int chuong = ch;
-            string[] nhanXet = {
-                "",
-                "The Betrayal không phá nổi bạn. Tôi cần thiết kế lại.",
-                "Khu rừng đã cúi đầu. Lần này tôi thật sự nghiêng mình.",
-                "Bạn đi qua núi lửa như đi dạo. Kinh khủng.",
-                "Vực thẳm... vực thẳm đã thua.믿을 수 없어."
-            };
-            string[] skinBonus = { "", "Golden", "", "", "" };
-
-            danhSach.Add(new ThanhTuu(
-                $"CLEAR_CH{chuong}_10",
-                $"The Betrayal — Chapter {chuong}",
-                $"Hoàn thành màn đặc biệt Chapter {chuong}",
-                nhanXet[chuong],
-                skinBonus[chuong]
             ));
         }
 
@@ -128,68 +108,65 @@ public class AchievementManager : MonoBehaviour
             "Speedrunner",
             "Qua 1 màn mà không chết lần nào",
             "Ủa, bạn có gian lận không đấy?",
-            ""
+            "", true
         ));
 
-        // === CHẾT VÌ 1 LOẠI BẪY 10 LẦN LIÊN TIẾP ===
+        // === CHẾT VÌ 1 LOẠI BẪY 10 LẦN LIÊN TIẾP (ẩn) ===
         danhSach.Add(new ThanhTuu(
             "TRAP_STREAK_FAKE",
             "Kẻ Ngây Thơ",
             "Chết vì FakePlatform 10 lần liên tiếp",
             "Platform đó đã biến mất 10 lần. Lần 11 bạn vẫn nhảy lên.",
-            ""
+            "", true
         ));
         danhSach.Add(new ThanhTuu(
             "TRAP_STREAK_SPIKE",
             "Nhím Người",
             "Chết vì Spike 10 lần liên tiếp",
             "Spike không tự đến với bạn. Nhưng bạn cứ chạy vào.",
-            ""
+            "", true
         ));
         danhSach.Add(new ThanhTuu(
             "TRAP_STREAK_FALLING",
             "Đội Trưởng Nhìn Lên",
             "Chết vì FallingBrick 10 lần liên tiếp",
             "Gạch rơi từ trên xuống. Từ. Trên. Xuống. Nhìn lên đi bạn ơi.",
-            ""
+            "", true
         ));
         danhSach.Add(new ThanhTuu(
             "TRAP_STREAK_SPRING",
             "Người Yêu Lò Xo",
             "Chết vì SpringTrap 10 lần liên tiếp",
             "Lò xo đó bắn bạn lên 10 lần. Có vẻ bạn thích bay.",
-            ""
+            "", true
         ));
         danhSach.Add(new ThanhTuu(
             "TRAP_STREAK_WALL",
             "Ôm Tường",
             "Chết vì WallSpike 10 lần liên tiếp",
             "Tường có spike. Bạn biết điều đó. Nhưng vẫn tiếp tục.",
-            ""
+            "", true
         ));
         danhSach.Add(new ThanhTuu(
             "TRAP_STREAK_BETRAYING",
             "Tín Đồ Platform",
             "Chết vì BetrayingPlatform 10 lần liên tiếp",
             "Platform phản bội bạn 10 lần. Vậy mà bạn vẫn tin tưởng nó.",
-            ""
+            "", true
         ));
     }
 
     // =============================================================
-    // CHECK SAU KHI CHẾT
+    // CHECK SAU KHI CHẾT — gọi từ KillZone với loaiBay cụ thể
     // =============================================================
     public void KiemTraSauKhiChet(string loaiBay)
     {
         chetTrongManNay = true;
-        int tongChet = PlayerPrefs.GetInt("Deaths_Total", 0);
 
-        // Death milestone
-        KiemTraVaMo("DEATH_100", tongChet >= 100);
-        KiemTraVaMo("DEATH_500", tongChet >= 500);
-        KiemTraVaMo("DEATH_1000", tongChet >= 1000);
+        // Death milestone — đọc giá trị đã được GameManager tăng trước đó
+        KiemTraMilestonesChet();
 
-        // Bẫy liên tiếp
+        // Bẫy liên tiếp — chỉ cập nhật khi có loaiBay cụ thể
         if (!string.IsNullOrEmpty(loaiBay))
         {
             if (loaiBay == bayVuaChet)
@@ -221,12 +198,18 @@ public class AchievementManager : MonoBehaviour
                 soLanChetBayLienTiep = 0;
             }
         }
-        else
-        {
-            // Chết không rõ nguyên nhân → reset streak
-            bayVuaChet = "";
-            soLanChetBayLienTiep = 0;
-        }
+        // Không reset streak nếu loaiBay rỗng — chỉ KillZone mới có quyền gọi hàm này
+    }
+
+    // Chỉ kiểm tra milestone chết — KHÔNG đụng streak
+    // Gọi từ GameManager khi chết do nguyên nhân không phải KillZone
+    public void KiemTraMilestonesChet()
+    {
+        chetTrongManNay = true;
+        int tongChet = PlayerPrefs.GetInt("Deaths_Total", 0);
+        KiemTraVaMo("DEATH_100", tongChet >= 100);
+        KiemTraVaMo("DEATH_500", tongChet >= 500);
+        KiemTraVaMo("DEATH_1000", tongChet >= 1000);
     }
 
     // =============================================================
@@ -246,27 +229,26 @@ public class AchievementManager : MonoBehaviour
         if (!tenMan.StartsWith("Level_")) return;
         string[] parts = tenMan.Split('_');
         if (parts.Length < 3) return;
+
+        // Chương Special không trigger achievement chương
         if (parts[1] == "S") return;
+
         if (!int.TryParse(parts[1], out int soChuong)) return;
         if (!int.TryParse(parts[2], out int soMan)) return;
         if (soChuong < 1 || soChuong > 4) return;
 
-        // Hoàn thành màn 9 → check clear 1-9
-        if (soMan == 9)
+        // Hoàn thành màn 8 → check đã pass đủ 8 màn
+        if (soMan == 8)
         {
-            bool hoanThanh19 = true;
-            for (int i = 1; i <= 9; i++)
+            bool hoanThanh = true;
+            for (int i = 1; i <= 8; i++)
             {
                 if (PlayerPrefs.GetInt($"Level_{soChuong}_{i}_passed", 0) == 0)
-                { hoanThanh19 = false; break; }
+                { hoanThanh = false; break; }
             }
-            if (hoanThanh19)
-                KiemTraVaMo($"CLEAR_CH{soChuong}_1TO9", true);
+            if (hoanThanh)
+                KiemTraVaMo($"CLEAR_CH{soChuong}", true);
         }
-
-        // Hoàn thành màn 10
-        if (soMan == 10)
-            KiemTraVaMo($"CLEAR_CH{soChuong}_10", true);
     }
 
     // =============================================================

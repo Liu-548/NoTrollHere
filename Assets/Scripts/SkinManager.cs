@@ -40,6 +40,11 @@ public class SkinManager : MonoBehaviour
         public RuntimeAnimatorController controller;
         // Default dùng AnimatorController gốc
         // Skin khác dùng AnimatorOverrideController
+
+        [Tooltip("Để (0,0) = giữ nguyên collider mặc định. Đặt giá trị nếu skin có sprite khác kích thước.")]
+        public Vector2 colSize;
+        [Tooltip("Offset của BoxCollider2D cho skin này. Để (0,0) = giữ nguyên.")]
+        public Vector2 colOffset;
     }
 
     [Header("=== SPRITES (preview) ===")]
@@ -66,17 +71,17 @@ public class SkinManager : MonoBehaviour
     {
         danhSachSkin.Clear();
 
-        // Tất cả skin mở từ đầu — khóa lại sau khi gắn achievement
-        ThemSkin("Default", "Default", "Nhân vật chalk nguyên bản", "Mặc định", true);
-        ThemSkin("Ghost", "Ghost", "Trong suốt như... ma", "Chết 100 lần", true);
-        ThemSkin("Forest", "Forest", "Hòa mình vào rừng xanh", "Hoàn thành Chapter 2", true);
-        ThemSkin("Ember", "Ember", "Tôi luyện qua lửa", "Hoàn thành Chapter 3", true);
-        ThemSkin("Void", "Void", "Từ vực thẳm trở về", "Hoàn thành Chapter 4", true);
-        ThemSkin("Skeleton", "Skeleton", "Chỉ còn lại xương", "Chết 500 lần", true);
-        ThemSkin("Golden", "Golden", "Huyền thoại thực sự", "Hoàn thành tất cả", true);
-        ThemSkin("IceMan", "Ice", "Băng giá vĩnh cửu", "Hoàn thành Chapter 4", true);
-        ThemSkin("Lava", "Lava", "Dung nham sục sôi", "Hoàn thành Chapter 3", true);
-        ThemSkin("Robot", "Robot", "Kim loại lạnh lùng", "Qua màn không chết", true);
+        // Default luôn mở, các skin còn lại unlock qua achievement
+        ThemSkin("Default",   "Default",  "Nhân vật chalk nguyên bản",  "Mặc định",              true);
+        ThemSkin("Ghost",     "Ghost",    "Trong suốt như... ma",        "Chết 100 lần",           false);
+        ThemSkin("Forest",    "Forest",   "Hòa mình vào rừng xanh",     "Hoàn thành Chapter 1",   false);
+        ThemSkin("Ember",     "Ember",    "Tôi luyện qua lửa",          "Hoàn thành Chapter 2",   false);
+        ThemSkin("Void",      "Void",     "Từ vực thẳm trở về",         "Hoàn thành Chapter 3",   false);
+        ThemSkin("Skeleton",  "Skeleton", "Chỉ còn lại xương",          "Chết 500 lần",           false);
+        ThemSkin("Golden",    "Golden",   "Huyền thoại thực sự",        "Hoàn thành Chapter 4",   false);
+        ThemSkin("IceMan",    "Ice",      "Băng giá vĩnh cửu",          "Hoàn thành Chapter 4",   false);
+        ThemSkin("Lava",      "Lava",     "Dung nham sục sôi",          "Hoàn thành Chapter 3",   false);
+        ThemSkin("Robot",     "Robot",    "Kim loại lạnh lùng",         "Qua màn không chết",     false);
 
         skinDangDung = PlayerPrefs.GetString("Skin_DangDung", "Default");
     }
@@ -142,15 +147,28 @@ public class SkinManager : MonoBehaviour
 
         SkinAnimator sa = cacSkinAnimator.Find(s => s.id == skinDangDung);
         if (sa != null && sa.controller != null)
-        {
             anim.runtimeAnimatorController = sa.controller;
-        }
         else
         {
             // Fallback về Default
             SkinAnimator def = cacSkinAnimator.Find(s => s.id == "Default");
             if (def != null && def.controller != null)
                 anim.runtimeAnimatorController = def.controller;
+        }
+
+        // Root motion có thể đẩy nhân vật nổi lên — luôn tắt sau khi đổi controller
+        anim.applyRootMotion = false;
+
+        // Cập nhật BoxCollider2D theo cấu hình thủ công của skin (nếu có)
+        if (sa != null && (sa.colSize != Vector2.zero || sa.colOffset != Vector2.zero))
+        {
+            BoxCollider2D col = player.GetComponent<BoxCollider2D>();
+            PlayerController pc = player.GetComponent<PlayerController>();
+            if (col != null && pc != null)
+            {
+                if (sa.colSize   != Vector2.zero) { col.size   = sa.colSize;   pc.kichThuocColGoc = sa.colSize;   }
+                if (sa.colOffset != Vector2.zero) { col.offset = sa.colOffset; pc.offsetColGoc    = sa.colOffset; }
+            }
         }
     }
 
