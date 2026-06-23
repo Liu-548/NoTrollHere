@@ -47,12 +47,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Chuong1/Level_1_8.unity
     guid: de28e5eba2abd0d41a43a470bb1c9bca
-  - enabled: 0
-    path: Assets/Scenes/Chuong1/Level_1_10.unity
-    guid: 7970cb05437042d46a5dabd57a43da6b
-  - enabled: 0
-    path: Assets/Scenes/Chuong1/Level_1_11.unity
-    guid: 4927dd6fcd747a744a3fdad252c373fd
   - enabled: 1
     path: Assets/Scenes/Chuong2/Level_2_1.unity
     guid: f3ca31f3a13475d4b9c6f91022ce0172
@@ -74,6 +68,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Chuong2/Level_2_7.unity
     guid: 76b91cbc79620e54c914a8c35c1d6026
+  - enabled: 1
+    path: Assets/Scenes/Chuong2/Level_2_8.unity
+    guid: 837353fa85ac6dd41907c36a501e1a9c
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

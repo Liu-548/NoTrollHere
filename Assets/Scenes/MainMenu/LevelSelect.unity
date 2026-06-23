@@ -2497,6 +2497,7 @@ MonoBehaviour:
   - {fileID: 631214009}
   nutTrai: {fileID: 1901281086}
   nutPhai: {fileID: 1971867386}
+  nutBack: {fileID: 2080947408}
   scrollViewSpecial: {fileID: 1247744235}
   scrollContent: {fileID: 1136230459}
   tenSceneMainMenu: MainMenu

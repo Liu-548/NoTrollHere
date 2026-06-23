@@ -15,6 +15,10 @@ public class GameManager : MonoBehaviour
     public string tenSceneMainMenu = "MainMenu";
     public string tenSceneLevelSelect = "LevelSelect";
 
+    [Header("=== GIỚI HẠN PHÁT HÀNH ===")]
+    [Tooltip("Chapter cao nhất có trong build. Đặt = 2 để khóa Ch3+. Tăng lên khi thêm chapter mới.")]
+    public int chuongToiDa = 2;
+
     void Awake()
     {
         if (instance == null)
@@ -204,8 +208,14 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        // Mở màn 1 chương tiếp theo
+        // Mở màn 1 chương tiếp theo — chỉ nếu chapter đó có trong build
         int chuongTiep = soChuong + 1;
+        if (chuongTiep > chuongToiDa)
+        {
+            Debug.Log($"[GameManager] Ch{soChuong} hoàn thành — Ch{chuongTiep} chưa có trong bản này.");
+            PlayerPrefs.Save();
+            return;
+        }
         string man1ChuongTiep = $"Level_{chuongTiep}_1";
         PlayerPrefs.SetInt(man1ChuongTiep + "_unlocked", 1);
 

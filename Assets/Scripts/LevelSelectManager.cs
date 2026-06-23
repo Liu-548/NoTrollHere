@@ -98,9 +98,16 @@ public class LevelSelectManager : MonoBehaviour
     private readonly Color mauChuDaMo = new Color(0.91f, 0.91f, 0.82f, 1f);
     private readonly Color mauChuLock = new Color(0.20f, 0.20f, 0.20f, 1f);
 
-    // Index 1 = Chapter 1 = mặc định khi mở
     private int chuongHienTai = 1;
     private string levelMoiNhat = "Level_1_1";
+
+    // Chapter cao nhất có trong build — đọc từ GameManager, fallback = 2
+    private int chuongToiDa => GameManager.instance != null ? GameManager.instance.chuongToiDa : 2;
+
+    // --- Dropdown chọn chương ---
+    private GameObject panelDropdown;
+    private TextMeshProUGUI txtNhanDropdown;
+    private GameObject overlayDongDropdown;
 
     void Start()
     {
@@ -128,9 +135,13 @@ public class LevelSelectManager : MonoBehaviour
         WireButton(nutPhai, NutPhai);
         WireButton(nutBack, NutBack);
 
-        // Luôn mở ở Chapter 1 (index 1) khi vào Level Select
-        chuongHienTai = 1;
+        // Nhảy thẳng vào chapter cao nhất đã unlock
+        chuongHienTai = LayIndexChuongCaoNhat();
         HienThiChuong(chuongHienTai);
+
+        // Tạo dropdown chọn chương góc dưới phải
+        if (canvas != null) TaoDropdownChuong(canvas);
+        CapNhatNhanDropdown();
     }
 
     // =============================================================
@@ -262,10 +273,10 @@ public class LevelSelectManager : MonoBehaviour
             if (cg != null) cg.alpha = coTrai ? 1f : 0.25f;
         }
 
-        // Phải — sang chương sau (chỉ nếu đã unlock)
+        // Phải — sang chương sau (chỉ nếu đã unlock và trong giới hạn build)
         if (nutPhai != null)
         {
-            bool coTiep = idx < tenCacChuong.Length - 1;
+            bool coTiep = idx < tenCacChuong.Length - 1 && idx < chuongToiDa;
             bool tiepDaUnlock = coTiep && KiemTraDuocXem(idx + 1);
             nutPhai.interactable = coTiep;
             CanvasGroup cg = nutPhai.GetComponent<CanvasGroup>();
@@ -278,6 +289,9 @@ public class LevelSelectManager : MonoBehaviour
     // =============================================================
     bool KiemTraDuocXem(int idx)
     {
+        // Chapter vượt giới hạn build → luôn khoá
+        if (idx > chuongToiDa) return false;
+
         // Chapter 1 luôn xem được
         if (idx == 1) return true;
 
@@ -557,20 +571,221 @@ public class LevelSelectManager : MonoBehaviour
         {
             chuongHienTai--;
             HienThiChuong(chuongHienTai);
+            CapNhatNhanDropdown();
         }
     }
 
     public void NutPhai()
     {
-        if (chuongHienTai < tenCacChuong.Length - 1)
+        if (chuongHienTai < tenCacChuong.Length - 1 && chuongHienTai < chuongToiDa)
         {
             chuongHienTai++;
             HienThiChuong(chuongHienTai);
+            CapNhatNhanDropdown();
         }
     }
 
     public void NutBack()
     {
         SceneManager.LoadScene(tenSceneMainMenu);
+    }
+
+    // =============================================================
+    // AUTO-JUMP: chapter cao nhất đã unlock (bỏ qua Special idx 0)
+    // =============================================================
+    int LayIndexChuongCaoNhat()
+    {
+        // Giới hạn trong phạm vi build, bỏ qua Special (idx 0)
+        int giaiHan = Mathf.Min(tenCacChuong.Length - 1, chuongToiDa);
+        for (int i = giaiHan; i >= 1; i--)
+            if (KiemTraDuocXem(i)) return i;
+        return 1;
+    }
+
+    // Giữ lại để dùng nếu cần ở nơi khác
+    int LayIndexChuongTuLevel(string tenLevel)
+    {
+        for (int i = 0; i < prefixCacChuong.Length; i++)
+            if (tenLevel.StartsWith(prefixCacChuong[i]))
+                return i;
+        return 1;
+    }
+
+    // =============================================================
+    // DROPDOWN CHỌN CHƯƠNG — tạo runtime, góc dưới phải
+    // Manual sizing (không dùng ContentSizeFitter) để tránh layout delay
+    // =============================================================
+    void TaoDropdownChuong(Canvas canvas)
+    {
+        const float ITEM_H   = 34f;
+        const float GAP      = 2f;
+        const int   MAX_HIEN = 4;    // tối đa 4 item hiển thị, nhiều hơn thì scroll
+        const float PANEL_W  = 180f;
+        const float PAD      = 4f;
+
+        // Đếm và tính trước kích thước
+        int soUnlock = 0;
+        for (int i = 0; i < tenCacChuong.Length; i++)
+            if (KiemTraDuocXem(i)) soUnlock++;
+
+        float rowH     = ITEM_H + GAP;
+        float contentH = soUnlock * rowH - GAP;                         // tổng chiều cao nội dung
+        float panelH   = Mathf.Min(soUnlock, MAX_HIEN) * rowH - GAP + PAD * 2f; // chiều cao panel cố định
+
+        // --- Overlay trong suốt — đóng dropdown khi click ngoài ---
+        overlayDongDropdown = new GameObject("Overlay_DongDropdown");
+        overlayDongDropdown.transform.SetParent(canvas.transform, false);
+        RectTransform overlayRT = overlayDongDropdown.AddComponent<RectTransform>();
+        overlayRT.anchorMin = Vector2.zero;
+        overlayRT.anchorMax = Vector2.one;
+        overlayRT.offsetMin = overlayRT.offsetMax = Vector2.zero;
+        overlayDongDropdown.AddComponent<Image>().color = Color.clear;
+        Button overlayBtn = overlayDongDropdown.AddComponent<Button>();
+        overlayBtn.transition = Selectable.Transition.None;
+        overlayBtn.onClick.AddListener(DongDropdown);
+        overlayDongDropdown.SetActive(false);
+
+        // --- Panel (background + ScrollRect) ---
+        panelDropdown = new GameObject("Panel_ListChuong");
+        panelDropdown.transform.SetParent(canvas.transform, false);
+        RectTransform panelRT = panelDropdown.AddComponent<RectTransform>();
+        panelRT.anchorMin        = new Vector2(1f, 0f);
+        panelRT.anchorMax        = new Vector2(1f, 0f);
+        panelRT.pivot            = new Vector2(1f, 0f);
+        panelRT.sizeDelta        = new Vector2(PANEL_W, panelH);
+        panelRT.anchoredPosition = new Vector2(-20f, 60f);
+        panelDropdown.AddComponent<Image>().color = new Color(0.10f, 0.10f, 0.10f, 0.97f);
+        ScrollRect sr = panelDropdown.AddComponent<ScrollRect>();
+        sr.horizontal = false; sr.vertical = true;
+        sr.scrollSensitivity = 25f;
+        sr.movementType = ScrollRect.MovementType.Clamped;
+        sr.inertia = false;
+
+        // --- Viewport (Mask) ---
+        GameObject goVP = new GameObject("Viewport");
+        goVP.transform.SetParent(panelDropdown.transform, false);
+        RectTransform vpRT = goVP.AddComponent<RectTransform>();
+        vpRT.anchorMin = Vector2.zero; vpRT.anchorMax = Vector2.one;
+        vpRT.offsetMin = new Vector2(PAD, PAD); vpRT.offsetMax = new Vector2(-PAD, -PAD);
+        // alpha nhỏ nhưng > 0 để Mask stencil hoạt động đúng
+        goVP.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.01f);
+        goVP.AddComponent<Mask>().showMaskGraphic = false;
+        sr.viewport = vpRT;
+
+        // --- Content (manual size — không dùng ContentSizeFitter) ---
+        GameObject goContent = new GameObject("Content");
+        goContent.transform.SetParent(goVP.transform, false);
+        RectTransform contentRT = goContent.AddComponent<RectTransform>();
+        contentRT.anchorMin = new Vector2(0f, 1f);
+        contentRT.anchorMax = new Vector2(1f, 1f);
+        contentRT.pivot     = new Vector2(0.5f, 1f);
+        contentRT.offsetMin = contentRT.offsetMax = Vector2.zero;
+        contentRT.sizeDelta = new Vector2(0f, contentH); // set thẳng, không cần layout pass
+        sr.content = contentRT;
+
+        // --- Items (anchor từ top, position thủ công) ---
+        int row = 0;
+        for (int i = 0; i < tenCacChuong.Length; i++)
+        {
+            if (!KiemTraDuocXem(i)) continue;
+            int idxCapture = i;
+
+            GameObject nutGo = new GameObject("NutChuong_" + i);
+            nutGo.transform.SetParent(goContent.transform, false);
+            RectTransform nutRT = nutGo.AddComponent<RectTransform>();
+            nutRT.anchorMin        = new Vector2(0f, 1f);
+            nutRT.anchorMax        = new Vector2(1f, 1f);
+            nutRT.pivot            = new Vector2(0.5f, 1f);
+            nutRT.sizeDelta        = new Vector2(0f, ITEM_H);
+            nutRT.anchoredPosition = new Vector2(0f, -(row * rowH));
+
+            Image nutImg  = nutGo.AddComponent<Image>();
+            nutImg.color  = Color.clear;
+            Button nutBtn = nutGo.AddComponent<Button>();
+            ColorBlock cb       = nutBtn.colors;
+            cb.normalColor      = Color.clear;
+            cb.highlightedColor = new Color(0.22f, 0.22f, 0.22f, 1f);
+            cb.pressedColor     = new Color(0.30f, 0.30f, 0.30f, 1f);
+            nutBtn.targetGraphic = nutImg;
+            nutBtn.colors = cb;
+
+            GameObject txtGo = new GameObject("Label");
+            txtGo.transform.SetParent(nutGo.transform, false);
+            RectTransform txtRT = txtGo.AddComponent<RectTransform>();
+            txtRT.anchorMin = Vector2.zero; txtRT.anchorMax = Vector2.one;
+            txtRT.offsetMin = new Vector2(14f, 0f); txtRT.offsetMax = new Vector2(-8f, 0f);
+            TextMeshProUGUI nutTxt = txtGo.AddComponent<TextMeshProUGUI>();
+            nutTxt.text      = tenCacChuong[i];
+            nutTxt.fontSize  = 12f;
+            nutTxt.color     = mauAccentChuong[i];
+            nutTxt.alignment = TextAlignmentOptions.MidlineLeft;
+            nutTxt.fontStyle = FontStyles.Bold;
+
+            nutBtn.onClick.AddListener(() =>
+            {
+                chuongHienTai = idxCapture;
+                HienThiChuong(chuongHienTai);
+                CapNhatNhanDropdown();
+                DongDropdown();
+            });
+
+            row++;
+        }
+
+        panelDropdown.SetActive(false);
+
+        // --- Nút trigger (luôn hiện, góc dưới phải) ---
+        GameObject btnGo = new GameObject("Btn_DropdownChuong");
+        btnGo.transform.SetParent(canvas.transform, false);
+        RectTransform btnRT = btnGo.AddComponent<RectTransform>();
+        btnRT.anchorMin        = new Vector2(1f, 0f);
+        btnRT.anchorMax        = new Vector2(1f, 0f);
+        btnRT.pivot            = new Vector2(1f, 0f);
+        btnRT.sizeDelta        = new Vector2(PANEL_W, 36f);
+        btnRT.anchoredPosition = new Vector2(-20f, 20f);
+        btnGo.AddComponent<Image>().color = new Color(0.14f, 0.14f, 0.14f, 1f);
+        Button btnDropdown = btnGo.AddComponent<Button>();
+
+        GameObject txtBtnGo = new GameObject("Text");
+        txtBtnGo.transform.SetParent(btnGo.transform, false);
+        RectTransform txtBtnRT = txtBtnGo.AddComponent<RectTransform>();
+        txtBtnRT.anchorMin = Vector2.zero; txtBtnRT.anchorMax = Vector2.one;
+        txtBtnRT.offsetMin = new Vector2(12f, 0f); txtBtnRT.offsetMax = new Vector2(-8f, 0f);
+        txtNhanDropdown           = txtBtnGo.AddComponent<TextMeshProUGUI>();
+        txtNhanDropdown.fontSize  = 13f;
+        txtNhanDropdown.alignment = TextAlignmentOptions.MidlineLeft;
+
+        btnDropdown.onClick.AddListener(ToggleDropdown);
+    }
+
+    void ToggleDropdown()
+    {
+        if (panelDropdown == null) return;
+        bool dangMo = panelDropdown.activeSelf;
+        if (dangMo)
+            DongDropdown();
+        else
+        {
+            panelDropdown.SetActive(true);
+            if (overlayDongDropdown != null) overlayDongDropdown.SetActive(true);
+            // Đưa panel + overlay lên trên cùng
+            panelDropdown.transform.SetAsLastSibling();
+            if (overlayDongDropdown != null)
+                overlayDongDropdown.transform.SetSiblingIndex(
+                    panelDropdown.transform.GetSiblingIndex() - 1);
+        }
+    }
+
+    void DongDropdown()
+    {
+        if (panelDropdown != null) panelDropdown.SetActive(false);
+        if (overlayDongDropdown != null) overlayDongDropdown.SetActive(false);
+    }
+
+    void CapNhatNhanDropdown()
+    {
+        if (txtNhanDropdown == null) return;
+        txtNhanDropdown.text  = tenCacChuong[chuongHienTai] + "  v";
+        txtNhanDropdown.color = mauAccentChuong[chuongHienTai];
     }
 }

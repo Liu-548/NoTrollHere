@@ -1,38 +1,52 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 public class BetrayingPlatform : MonoBehaviour
 {
+    // ─────────────────────────────────────────────────────────────
+    //  ENUMS
+    // ─────────────────────────────────────────────────────────────
+
     public enum CheDoDidong
     {
-        TuDong,
-        ChoTrigger,
-        TuDongMotChieu,
-        Waypoint,
-        XoayBay       // xoay đúng N độ rồi dừng → đẩy player xuống vực
+        TuDong,          // Tự động A→B→A lặp mãi
+        ChoTrigger,      // Đứng yên, chờ BetrayingTrigger kích hoạt
+        TuDongMotChieu,  // Tự động A→B một lần rồi dừng
+        Waypoint,        // Tự động chạy theo danh sách waypoint
+        XoayBay          // Xoay đúng N độ, đẩy player xuống vực
     }
 
     public enum CheDoWaypoint
     {
-        MotChieu,
-        LapLai,
-        PingPong
+        MotChieu,  // WP0→WP1→...→WPn rồi dừng
+        LapLai,    // WP0→WP1→...→WPn→WP0 vòng lặp
+        PingPong   // WP0→WPn→WP0→WPn qua lại
     }
 
     public enum HuongXoay
     {
-        NguocKimDongHo,  // Z dương (+)
-        XuoiKimDongHo    // Z âm  (-)
+        NguocKimDongHo,  // ngược chiều kim đồng hồ (+Z)
+        XuoiKimDongHo    // xuôi chiều kim đồng hồ  (-Z)
     }
 
     public enum CheDoSauXoay
     {
-        OYenTaiCho,  // giữ nguyên góc sau khi xoay
-        TroVeGoc     // xoay ngược về vị trí ban đầu
+        DungYen,     // giữ nguyên góc đã xoay, không làm gì thêm
+        TroVeGoc,    // xoay ngược về góc ban đầu rồi dừng
+        PhaHuy,      // xóa object sau khi xoay xong
+        XoayVoHan    // sau khi xoay đến góc, tiếp tục xoay mãi cùng hướng
     }
+
+    // ─────────────────────────────────────────────────────────────
+    //  INSPECTOR — CHẾ ĐỘ
+    // ─────────────────────────────────────────────────────────────
 
     [Header("=== CHẾ ĐỘ ===")]
     public CheDoDidong cheDo = CheDoDidong.ChoTrigger;
+
+    // ─────────────────────────────────────────────────────────────
+    //  INSPECTOR — WAYPOINTS  (chỉ dùng khi cheDo = Waypoint)
+    // ─────────────────────────────────────────────────────────────
 
     [Header("=== WAYPOINTS ===")]
     public Vector2[] cacWaypoint = new Vector2[]
@@ -44,47 +58,56 @@ public class BetrayingPlatform : MonoBehaviour
     public CheDoWaypoint cheDoWaypoint = CheDoWaypoint.LapLai;
     public float delayTaiMoiWaypoint = 0.3f;
 
-    [Header("=== ĐIỂM ĐẾN (không dùng Waypoint) ===")]
-    public Vector2 offsetDiemDen = new Vector2(3f, 0f);
+    // ─────────────────────────────────────────────────────────────
+    //  INSPECTOR — DI CHUYỂN THẲNG  (TuDong / ChoTrigger / TuDongMotChieu)
+    // ─────────────────────────────────────────────────────────────
 
-    [Header("=== TỐC ĐỘ ===")]
+    [Header("=== DI CHUYỂN THẲNG ===")]
+    [Tooltip("Điểm đến tính từ vị trí gốc (không dùng cho Waypoint / XoayBay)")]
+    public Vector2 offsetDiemDen = new Vector2(3f, 0f);
     public float tocDo = 3f;
+    [Tooltip("Tốc độ về (chỉ TuDong). 0 = dùng chung tocDo")]
     public float tocDoVe = 0f;
 
+    // ─────────────────────────────────────────────────────────────
+    //  INSPECTOR — DELAY  (dùng cho mọi chế độ)
+    // ─────────────────────────────────────────────────────────────
+
     [Header("=== DELAY ===")]
+    [Tooltip("Delay trước khi bắt đầu di chuyển / xoay")]
     public float delayTruocKhiDi = 0f;
+    [Tooltip("Thời gian đứng yên tại điểm đến trước khi về (chỉ TuDong)")]
     public float delayTaiDiem = 0.5f;
 
-    [Header("=== XOAY (di chuyển) ===")]
-    public bool coXoay = false;
-    public float tocDoXoay = 90f;
+    // ─────────────────────────────────────────────────────────────
+    //  INSPECTOR — XOAY BAY  (chỉ dùng khi cheDo = XoayBay)
+    // ─────────────────────────────────────────────────────────────
 
-    [Header("=== XOAY BAY (chế độ XoayBay) ===")]
-    [Tooltip("Số độ cần xoay")]
+    [Header("=== XOAY BAY ===")]
+    [Tooltip("Số độ cần xoay (luôn dương; hướng chọn ở Huong Xoay)")]
     public float gocXoayBay = 90f;
-    [Tooltip("Hướng xoay")]
     public HuongXoay huongXoay = HuongXoay.NguocKimDongHo;
     [Tooltip("Tốc độ xoay đi (độ/giây)")]
     public float tocDoXoayBay = 120f;
-    [Tooltip("Delay trước khi bắt đầu xoay")]
-    public float delayXoayBay = 0f;
-    [Tooltip("Sau khi xoay xong thì làm gì")]
-    public CheDoSauXoay cheDoSauXoay = CheDoSauXoay.OYenTaiCho;
-    [Tooltip("Delay trước khi xoay về (chỉ dùng khi TroVeGoc)")]
+    [Tooltip("Sau khi xoay tới góc: DungYen / TroVeGoc / PhaHuy / XoayVoHan")]
+    public CheDoSauXoay cheDoSauXoay = CheDoSauXoay.DungYen;
+    [Tooltip("Thời gian đứng yên trước khi xoay về (chỉ TroVeGoc)")]
     public float delayTruocKhiTroVe = 1f;
-    [Tooltip("Tốc độ xoay về (chỉ dùng khi TroVeGoc)")]
+    [Tooltip("Tốc độ xoay về (chỉ TroVeGoc). 0 = dùng chung tocDoXoayBay")]
     public float tocDoXoayVe = 120f;
 
+    // ─────────────────────────────────────────────────────────────
+    //  INSPECTOR — PHÁ HỦY  (dùng cho mọi chế độ)
+    // ─────────────────────────────────────────────────────────────
+
     [Header("=== PHÁ HỦY ===")]
+    [Tooltip("Tự xóa object sau khi đến đích / xoay xong")]
     public bool phaHuySauKhiDen = false;
     public float delayPhaHuy = 0.5f;
 
-    [Header("=== VISUAL ===")]
-    public bool nhayMayKhiSapDi = false;
-    public float thoiGianNhayMay = 0.3f;
-    public bool rungManHinhTruocKhiDi = false;
-    public float thoiGianRung = 0.3f;
-    public float doDungManHinh = 0.1f;
+    // ─────────────────────────────────────────────────────────────
+    //  INTERNAL
+    // ─────────────────────────────────────────────────────────────
 
     [HideInInspector] public Vector3 viTriGoc;
     [HideInInspector] public Vector3 viTriDen;
@@ -95,34 +118,36 @@ public class BetrayingPlatform : MonoBehaviour
     private BoxCollider2D col;
     private bool dangDiChuyen = false;
 
+    // ─────────────────────────────────────────────────────────────
+    //  LIFECYCLE
+    // ─────────────────────────────────────────────────────────────
+
     void Start()
     {
-        sr = GetComponent<SpriteRenderer>();
+        sr  = GetComponent<SpriteRenderer>();
         col = GetComponent<BoxCollider2D>();
 
         viTriGoc = transform.position;
         viTriDen = viTriGoc + new Vector3(offsetDiemDen.x, offsetDiemDen.y, 0);
         viTriPlatformTruoc = transform.position;
 
-        if (cheDo == CheDoDidong.TuDong)
-            StartCoroutine(TuDongLapLai());
-        else if (cheDo == CheDoDidong.TuDongMotChieu)
-            StartCoroutine(TuDongMotChieu());
-        else if (cheDo == CheDoDidong.Waypoint)
-            StartCoroutine(DiChuyenWaypoint());
-        else if (cheDo == CheDoDidong.XoayBay)
-            StartCoroutine(XoayBayTuDong());
+        switch (cheDo)
+        {
+            case CheDoDidong.TuDong:         StartCoroutine(TuDongLapLai());    break;
+            case CheDoDidong.TuDongMotChieu: StartCoroutine(TuDongMotChieu());  break;
+            case CheDoDidong.Waypoint:       StartCoroutine(DiChuyenWaypoint()); break;
+            case CheDoDidong.XoayBay:        StartCoroutine(XoayBayCoroutine()); break;
+            // ChoTrigger: ngồi yên chờ BetrayingTrigger gọi
+        }
     }
 
     void Update()
     {
+        // Kéo player theo khi platform tịnh tiến
         Vector3 delta = transform.position - viTriPlatformTruoc;
         if (playerTransform != null && delta != Vector3.zero)
             playerTransform.position += delta;
         viTriPlatformTruoc = transform.position;
-
-        if (coXoay && dangDiChuyen && cheDo != CheDoDidong.XoayBay)
-            transform.Rotate(0, 0, tocDoXoay * Time.deltaTime);
     }
 
     void OnCollisionEnter2D(Collision2D collision)
@@ -137,28 +162,16 @@ public class BetrayingPlatform : MonoBehaviour
             playerTransform = null;
     }
 
-    // =============================================================
-    // HELPER — chạy visual trước khi di chuyển
-    // =============================================================
-    IEnumerator ChayHieuUngTruocKhiDi()
-    {
-        if (nhayMayKhiSapDi)
-            yield return StartCoroutine(HieuUngNhayMay());
-        if (rungManHinhTruocKhiDi)
-            yield return StartCoroutine(RungManHinh());
-    }
+    // ─────────────────────────────────────────────────────────────
+    //  CHẾ ĐỘ: TU DONG  (A→B→A lặp)
+    // ─────────────────────────────────────────────────────────────
 
-    // =============================================================
-    // TỰ ĐỘNG A→B→A
-    // =============================================================
     IEnumerator TuDongLapLai()
     {
-        if (delayTruocKhiDi > 0)
-            yield return new WaitForSeconds(delayTruocKhiDi);
+        if (delayTruocKhiDi > 0) yield return new WaitForSeconds(delayTruocKhiDi);
 
         while (true)
         {
-            yield return StartCoroutine(ChayHieuUngTruocKhiDi());
             yield return StartCoroutine(DiToi(viTriDen, tocDo));
             yield return new WaitForSeconds(delayTaiDiem);
 
@@ -166,32 +179,25 @@ public class BetrayingPlatform : MonoBehaviour
             yield return StartCoroutine(DiToi(viTriGoc, tocVe));
             yield return new WaitForSeconds(delayTaiDiem);
 
-            if (phaHuySauKhiDen)
-            {
-                yield return StartCoroutine(PhaHuy());
-                yield break;
-            }
+            if (phaHuySauKhiDen) { yield return StartCoroutine(PhaHuy()); yield break; }
         }
     }
 
-    // =============================================================
-    // TỰ ĐỘNG MỘT CHIỀU
-    // =============================================================
+    // ─────────────────────────────────────────────────────────────
+    //  CHẾ ĐỘ: TU DONG MOT CHIEU  (A→B một lần)
+    // ─────────────────────────────────────────────────────────────
+
     IEnumerator TuDongMotChieu()
     {
-        if (delayTruocKhiDi > 0)
-            yield return new WaitForSeconds(delayTruocKhiDi);
-
-        yield return StartCoroutine(ChayHieuUngTruocKhiDi());
+        if (delayTruocKhiDi > 0) yield return new WaitForSeconds(delayTruocKhiDi);
         yield return StartCoroutine(DiToi(viTriDen, tocDo));
-
-        if (phaHuySauKhiDen)
-            yield return StartCoroutine(PhaHuy());
+        if (phaHuySauKhiDen) yield return StartCoroutine(PhaHuy());
     }
 
-    // =============================================================
-    // KÍCH HOẠT TỪ TRIGGER — offset
-    // =============================================================
+    // ─────────────────────────────────────────────────────────────
+    //  CHẾ ĐỘ: CHO TRIGGER — kích hoạt từ BetrayingTrigger (offset)
+    // ─────────────────────────────────────────────────────────────
+
     public void KichHoat(Vector2 offset, float tocDoOverride)
     {
         if (dangDiChuyen) return;
@@ -203,19 +209,15 @@ public class BetrayingPlatform : MonoBehaviour
 
     IEnumerator DiTuTrigger(Vector3 dich, float toc)
     {
-        if (delayTruocKhiDi > 0)
-            yield return new WaitForSeconds(delayTruocKhiDi);
-
-        yield return StartCoroutine(ChayHieuUngTruocKhiDi());
+        if (delayTruocKhiDi > 0) yield return new WaitForSeconds(delayTruocKhiDi);
         yield return StartCoroutine(DiToi(dich, toc));
-
-        if (phaHuySauKhiDen)
-            yield return StartCoroutine(PhaHuy());
+        if (phaHuySauKhiDen) yield return StartCoroutine(PhaHuy());
     }
 
-    // =============================================================
-    // KÍCH HOẠT WAYPOINT TỪ TRIGGER
-    // =============================================================
+    // ─────────────────────────────────────────────────────────────
+    //  CHẾ ĐỘ: WAYPOINT — kích hoạt từ BetrayingTrigger
+    // ─────────────────────────────────────────────────────────────
+
     public void KichHoatWaypoint(int batDauTu = 0)
     {
         if (cacWaypoint == null || cacWaypoint.Length == 0)
@@ -227,40 +229,24 @@ public class BetrayingPlatform : MonoBehaviour
         StartCoroutine(DiChuyenWaypointTuIndex(batDauTu));
     }
 
-    // =============================================================
-    // WAYPOINT — tự động
-    // =============================================================
     IEnumerator DiChuyenWaypoint()
     {
         if (cacWaypoint == null || cacWaypoint.Length == 0) yield break;
-        if (delayTruocKhiDi > 0)
-            yield return new WaitForSeconds(delayTruocKhiDi);
-
-        yield return StartCoroutine(ChayHieuUngTruocKhiDi());
+        if (delayTruocKhiDi > 0) yield return new WaitForSeconds(delayTruocKhiDi);
         yield return StartCoroutine(ChayWaypoint(0));
     }
 
-    // =============================================================
-    // WAYPOINT — từ trigger
-    // =============================================================
     IEnumerator DiChuyenWaypointTuIndex(int indexBatDau)
     {
-        if (delayTruocKhiDi > 0)
-            yield return new WaitForSeconds(delayTruocKhiDi);
-
-        yield return StartCoroutine(ChayHieuUngTruocKhiDi());
+        if (delayTruocKhiDi > 0) yield return new WaitForSeconds(delayTruocKhiDi);
         yield return StartCoroutine(ChayWaypoint(indexBatDau));
     }
 
-    // =============================================================
-    // LOGIC WAYPOINT CHUNG
-    // =============================================================
     IEnumerator ChayWaypoint(int indexBatDau)
     {
         Vector3[] danhSachDiem = new Vector3[cacWaypoint.Length];
         for (int i = 0; i < cacWaypoint.Length; i++)
-            danhSachDiem[i] = viTriGoc +
-                new Vector3(cacWaypoint[i].x, cacWaypoint[i].y, 0);
+            danhSachDiem[i] = viTriGoc + new Vector3(cacWaypoint[i].x, cacWaypoint[i].y, 0);
 
         int chiSoHienTai = Mathf.Clamp(indexBatDau, 0, danhSachDiem.Length - 1);
         int huong = 1;
@@ -280,8 +266,7 @@ public class BetrayingPlatform : MonoBehaviour
             {
                 if (cheDoWaypoint == CheDoWaypoint.MotChieu)
                 {
-                    if (phaHuySauKhiDen)
-                        yield return StartCoroutine(PhaHuy());
+                    if (phaHuySauKhiDen) yield return StartCoroutine(PhaHuy());
                     yield break;
                 }
                 else if (cheDoWaypoint == CheDoWaypoint.LapLai)
@@ -289,19 +274,16 @@ public class BetrayingPlatform : MonoBehaviour
                     chiSoTiep = 0;
                     hoanThanhMotVong = true;
                 }
-                else if (cheDoWaypoint == CheDoWaypoint.PingPong)
+                else // PingPong
                 {
                     huong = -1;
-                    chiSoTiep = danhSachDiem.Length - 2;
-                    if (chiSoTiep < 0) chiSoTiep = 0;
+                    chiSoTiep = Mathf.Max(0, danhSachDiem.Length - 2);
                 }
             }
             else if (chiSoTiep < 0)
             {
                 huong = 1;
-                chiSoTiep = 1;
-                if (chiSoTiep >= danhSachDiem.Length)
-                    chiSoTiep = 0;
+                chiSoTiep = Mathf.Min(1, danhSachDiem.Length - 1);
                 hoanThanhMotVong = true;
             }
 
@@ -317,163 +299,122 @@ public class BetrayingPlatform : MonoBehaviour
         }
     }
 
-    // =============================================================
-    // DI CHUYỂN
-    // =============================================================
-    IEnumerator DiToi(Vector3 dich, float toc)
-    {
-        dangDiChuyen = true;
-        while (Vector3.Distance(transform.position, dich) > 0.02f)
-        {
-            transform.position = Vector3.MoveTowards(
-                transform.position, dich, toc * Time.deltaTime);
-            yield return null;
-        }
-        transform.position = dich;
-        dangDiChuyen = false;
-    }
+    // ─────────────────────────────────────────────────────────────
+    //  CHẾ ĐỘ: XOAY BAY
+    // ─────────────────────────────────────────────────────────────
 
-    // =============================================================
-    // PHÁ HỦY
-    // =============================================================
-    IEnumerator PhaHuy()
-    {
-        yield return new WaitForSeconds(delayPhaHuy);
-        playerTransform = null;
-        if (sr != null) sr.enabled = false;
-        if (col != null) col.enabled = false;
-        Destroy(gameObject);
-    }
-
-    // =============================================================
-    // NHẤP NHÁY
-    // =============================================================
-    IEnumerator HieuUngNhayMay()
-    {
-        if (sr == null) yield break;
-        Color mauGoc = sr.color;
-        float moiLan = thoiGianNhayMay / 6f;
-        for (int i = 0; i < 3; i++)
-        {
-            sr.color = new Color(mauGoc.r, mauGoc.g, mauGoc.b, 0.3f);
-            yield return new WaitForSeconds(moiLan);
-            sr.color = mauGoc;
-            yield return new WaitForSeconds(moiLan);
-        }
-    }
-
-    // =============================================================
-    // RUNG MÀN HÌNH — route qua CameraController để tránh xung đột
-    // =============================================================
-    IEnumerator RungManHinh()
-    {
-        CameraController cc = Camera.main?.GetComponent<CameraController>();
-        if (cc != null)
-            yield return StartCoroutine(cc.CoroutineRung(thoiGianRung, doDungManHinh));
-        else
-        {
-            // Fallback khi không có CameraController
-            Camera cam = Camera.main;
-            if (cam == null) yield break;
-            Vector3 viTriGocCam = cam.transform.position;
-            float daRung = 0f;
-            while (daRung < thoiGianRung)
-            {
-                cam.transform.position = new Vector3(
-                    viTriGocCam.x + Random.Range(-doDungManHinh, doDungManHinh),
-                    viTriGocCam.y + Random.Range(-doDungManHinh, doDungManHinh),
-                    viTriGocCam.z);
-                daRung += Time.deltaTime;
-                yield return null;
-            }
-            cam.transform.position = viTriGocCam;
-        }
-    }
-
-    // =============================================================
-    // XOAY BAY — tự động (khi cheDo = XoayBay)
-    // =============================================================
-    IEnumerator XoayBayTuDong()
-    {
-        if (delayXoayBay > 0)
-            yield return new WaitForSeconds(delayXoayBay);
-        yield return StartCoroutine(ThucHienXoayBay());
-    }
-
-    // =============================================================
-    // XOAY BAY — kích hoạt từ trigger
-    // =============================================================
+    /// <summary>Gọi từ BetrayingTrigger (cheDoTrigger = XoayBay)</summary>
     public void KichHoatXoayBay()
     {
         StopAllCoroutines();
-        StartCoroutine(XoayBayTuDong());
+        StartCoroutine(XoayBayCoroutine());
     }
 
-    // =============================================================
-    // XOAY BAY — helper xoay một lượt góc
-    // =============================================================
-    IEnumerator XoayMotLuot(float goc, float tocDo)
+    IEnumerator XoayBayCoroutine()
     {
-        float daMoi = huongXoay == HuongXoay.NguocKimDongHo ? 1f : -1f;
-        float daDi = 0f;
-        while (daDi < goc)
-        {
-            float buoc = Mathf.Min(tocDo * Time.deltaTime, goc - daDi);
-            transform.Rotate(0, 0, daMoi * buoc);
-            daDi += buoc;
-            yield return null;
-        }
-    }
-
-    // =============================================================
-    // XOAY BAY — logic chính: xoay N độ, player đi theo, rồi ở yên / trở về
-    // =============================================================
-    IEnumerator ThucHienXoayBay()
-    {
-        yield return StartCoroutine(ChayHieuUngTruocKhiDi());
+        if (delayTruocKhiDi > 0) yield return new WaitForSeconds(delayTruocKhiDi);
 
         // Gắn player vào tường để xoay cùng
         if (playerTransform != null)
             playerTransform.SetParent(transform);
 
+        // Xoay đến góc mục tiêu
         dangDiChuyen = true;
-        yield return StartCoroutine(XoayMotLuot(gocXoayBay, tocDoXoayBay));
+        yield return StartCoroutine(XoayMotLuot(gocXoayBay, tocDoXoayBay, huongXoay));
         dangDiChuyen = false;
 
-        // Tách player — nếu ở đây player còn trên tường thì sẽ rơi theo vật lý
+        // Tách player — rơi tự do
         if (playerTransform != null)
         {
             playerTransform.SetParent(null);
             playerTransform = null;
         }
 
-        // --- Sau khi xoay xong ---
-        if (cheDoSauXoay == CheDoSauXoay.TroVeGoc)
+        // Xử lý sau khi đến góc
+        switch (cheDoSauXoay)
         {
-            // Đợi rồi xoay ngược về
-            if (delayTruocKhiTroVe > 0)
-                yield return new WaitForSeconds(delayTruocKhiTroVe);
+            case CheDoSauXoay.DungYen:
+                // không làm gì thêm
+                break;
 
-            // Đảo hướng để xoay về
-            HuongXoay huongCu = huongXoay;
-            huongXoay = huongXoay == HuongXoay.NguocKimDongHo
-                ? HuongXoay.XuoiKimDongHo
-                : HuongXoay.NguocKimDongHo;
+            case CheDoSauXoay.TroVeGoc:
+                if (delayTruocKhiTroVe > 0)
+                    yield return new WaitForSeconds(delayTruocKhiTroVe);
 
-            dangDiChuyen = true;
-            yield return StartCoroutine(XoayMotLuot(gocXoayBay, tocDoXoayVe > 0 ? tocDoXoayVe : tocDoXoayBay));
-            dangDiChuyen = false;
+                HuongXoay huongNguoc = huongXoay == HuongXoay.NguocKimDongHo
+                    ? HuongXoay.XuoiKimDongHo
+                    : HuongXoay.NguocKimDongHo;
 
-            huongXoay = huongCu; // khôi phục để có thể kích hoạt lại
+                dangDiChuyen = true;
+                float tocVe = tocDoXoayVe > 0 ? tocDoXoayVe : tocDoXoayBay;
+                yield return StartCoroutine(XoayMotLuot(gocXoayBay, tocVe, huongNguoc));
+                dangDiChuyen = false;
+                break;
+
+            case CheDoSauXoay.PhaHuy:
+                yield return StartCoroutine(PhaHuy());
+                break;
+
+            case CheDoSauXoay.XoayVoHan:
+                // tiếp tục xoay mãi cùng hướng, cùng tốc độ
+                float daMoi = huongXoay == HuongXoay.NguocKimDongHo ? 1f : -1f;
+                while (true)
+                {
+                    transform.Rotate(0, 0, daMoi * tocDoXoayBay * Time.deltaTime);
+                    yield return null;
+                }
         }
-
-        if (phaHuySauKhiDen)
-            yield return StartCoroutine(PhaHuy());
     }
 
-    // =============================================================
-    // GIZMOS
-    // =============================================================
+    /// <summary>Xoay đúng |goc| độ theo hướng chỉ định, tốc độ (độ/giây)</summary>
+    IEnumerator XoayMotLuot(float goc, float tocDoXoay, HuongXoay huong)
+    {
+        float mucTieu = Mathf.Abs(goc);
+        float daMoi = huong == HuongXoay.NguocKimDongHo ? 1f : -1f;
+        float daDi = 0f;
+
+        while (daDi < mucTieu)
+        {
+            float buoc = Mathf.Min(tocDoXoay * Time.deltaTime, mucTieu - daDi);
+            transform.Rotate(0, 0, daMoi * buoc);
+            daDi += buoc;
+            yield return null;
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  CHUNG: DI CHUYỂN TỊNH TIẾN
+    // ─────────────────────────────────────────────────────────────
+
+    IEnumerator DiToi(Vector3 dich, float toc)
+    {
+        dangDiChuyen = true;
+        while (Vector3.Distance(transform.position, dich) > 0.02f)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, dich, toc * Time.deltaTime);
+            yield return null;
+        }
+        transform.position = dich;
+        dangDiChuyen = false;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  CHUNG: PHÁ HỦY
+    // ─────────────────────────────────────────────────────────────
+
+    IEnumerator PhaHuy()
+    {
+        yield return new WaitForSeconds(delayPhaHuy);
+        playerTransform = null;
+        if (sr  != null) sr.enabled  = false;
+        if (col != null) col.enabled = false;
+        Destroy(gameObject);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  GIZMOS
+    // ─────────────────────────────────────────────────────────────
+
     void OnDrawGizmos()
     {
         Vector3 goc = Application.isPlaying ? viTriGoc : transform.position;
@@ -482,47 +423,39 @@ public class BetrayingPlatform : MonoBehaviour
         {
             for (int i = 0; i < cacWaypoint.Length; i++)
             {
-                Vector3 diem = goc +
-                    new Vector3(cacWaypoint[i].x, cacWaypoint[i].y, 0);
+                Vector3 diem = goc + new Vector3(cacWaypoint[i].x, cacWaypoint[i].y, 0);
 
-                Gizmos.color = i == 0 ? Color.green :
-                               i == cacWaypoint.Length - 1 ? Color.red :
-                               Color.yellow;
+                Gizmos.color = i == 0 ? Color.green
+                             : i == cacWaypoint.Length - 1 ? Color.red
+                             : Color.yellow;
                 Gizmos.DrawWireSphere(diem, 0.18f);
 
                 if (i < cacWaypoint.Length - 1)
                 {
-                    Vector3 diemTiep = goc +
-                        new Vector3(cacWaypoint[i + 1].x, cacWaypoint[i + 1].y, 0);
+                    Vector3 diemTiep = goc + new Vector3(cacWaypoint[i + 1].x, cacWaypoint[i + 1].y, 0);
                     Gizmos.color = Color.cyan;
                     Gizmos.DrawLine(diem, diemTiep);
                 }
 
 #if UNITY_EDITOR
-                UnityEditor.Handles.Label(
-                    diem + Vector3.up * 0.3f, $"WP{i}");
+                UnityEditor.Handles.Label(diem + Vector3.up * 0.3f, $"WP{i}");
 #endif
             }
 
             if (cheDoWaypoint == CheDoWaypoint.LapLai && cacWaypoint.Length > 1)
             {
                 Vector3 d0 = goc + new Vector3(cacWaypoint[0].x, cacWaypoint[0].y, 0);
-                Vector3 dn = goc + new Vector3(
-                    cacWaypoint[cacWaypoint.Length - 1].x,
-                    cacWaypoint[cacWaypoint.Length - 1].y, 0);
+                Vector3 dn = goc + new Vector3(cacWaypoint[^1].x, cacWaypoint[^1].y, 0);
                 Gizmos.color = new Color(0, 1, 1, 0.3f);
                 Gizmos.DrawLine(dn, d0);
             }
         }
-        else
+        else if (cheDo != CheDoDidong.XoayBay)
         {
             Vector3 den = goc + new Vector3(offsetDiemDen.x, offsetDiemDen.y, 0);
-            Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(goc, 0.15f);
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawLine(goc, den);
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(den, 0.15f);
+            Gizmos.color = Color.green;  Gizmos.DrawWireSphere(goc, 0.15f);
+            Gizmos.color = Color.yellow; Gizmos.DrawLine(goc, den);
+            Gizmos.color = Color.red;    Gizmos.DrawWireSphere(den, 0.15f);
         }
     }
 }
