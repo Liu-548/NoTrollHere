@@ -25,14 +25,17 @@ public class MainMenuManager : MonoBehaviour
     // === NÚT PLAY ===
     public void NutPlay()
     {
-        // Đảm bảo timeScale về 1 trước khi vào game
         Time.timeScale = 1f;
 
-        string levelMoiNhat = "Level_1_1";
+        string levelMoiNhat;
         if (GameManager.instance != null)
             levelMoiNhat = GameManager.instance.LayLevelMoiNhat();
         else
-            levelMoiNhat = PlayerPrefs.GetString("LatestLevel", "Level_1_1");
+            levelMoiNhat = PlayerPrefs.GetString("LatestLevel", "Level_S_0");
+
+        // Nếu level mới nhất chưa được unlock (save data cũ/lỗi), về S_0
+        bool daUnlock = PlayerPrefs.GetInt(levelMoiNhat + "_unlocked", 0) == 1;
+        if (!daUnlock) levelMoiNhat = "Level_S_0";
 
         StartCoroutine(FadeOutRoi(() =>
             SceneManager.LoadScene(levelMoiNhat)));

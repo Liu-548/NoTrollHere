@@ -244,7 +244,7 @@ public class GameManager : MonoBehaviour
     }
 
     public string LayLevelMoiNhat()
-        => PlayerPrefs.GetString("LatestLevel", "Level_1_1");
+        => PlayerPrefs.GetString("LatestLevel", "Level_S_0");
 
     public bool LaLevelDaUnlock(string tenLevel)
         => PlayerPrefs.GetInt(tenLevel + "_unlocked", 0) == 1;

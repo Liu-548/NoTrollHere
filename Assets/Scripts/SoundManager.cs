@@ -279,7 +279,10 @@ public class SoundManager : MonoBehaviour
 
     public void CapNhatVolumeMusic()
     {
-        if (musicSource != null)
-            musicSource.volume = volumeMusic;
+        if (musicSource == null) return;
+        musicSource.volume = volumeMusic;
+        // Nếu nhạc đã có clip nhưng bị dừng (do volume=0 trước đó), play lại
+        if (!musicSource.isPlaying && musicSource.clip != null)
+            musicSource.Play();
     }
 }

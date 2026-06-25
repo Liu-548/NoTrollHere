@@ -36,6 +36,24 @@ public class PauseMenu : MonoBehaviour
         if (panelSettings != null)
             panelSettings.SetActive(false);
 
+        if (sliderSFX != null)
+        {
+            sliderSFX.minValue = 0f;
+            sliderSFX.onValueChanged.RemoveAllListeners();
+            sliderSFX.onValueChanged.AddListener(DoiVolumeSFX);
+        }
+        if (sliderMusic != null)
+        {
+            sliderMusic.minValue = 0f;
+            sliderMusic.onValueChanged.RemoveAllListeners();
+            sliderMusic.onValueChanged.AddListener(DoiVolumeMusic);
+        }
+        if (toggleFullscreen != null)
+        {
+            toggleFullscreen.onValueChanged.RemoveAllListeners();
+            toggleFullscreen.onValueChanged.AddListener(DoiFullscreen);
+        }
+
         // Load settings đã lưu
         DocSettings();
     }

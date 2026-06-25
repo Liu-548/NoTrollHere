@@ -3412,6 +3412,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4198261725095357377, guid: e9b08cdcaec9e944399e61ecdab08378, type: 3}
+      propertyPath: delayTruocKhiDi
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4198261725095357377, guid: e9b08cdcaec9e944399e61ecdab08378, type: 3}
       propertyPath: delayTaiMoiWaypoint
       value: 0.1
       objectReference: {fileID: 0}
