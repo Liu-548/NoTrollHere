@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 using TMPro;
+using System.Collections;
 
 public class PauseMenu : MonoBehaviour
 {
@@ -21,6 +23,18 @@ public class PauseMenu : MonoBehaviour
     private int soLanChetManNay = 0;
     private bool dangPause = false;
     private bool dangSettings = false;
+
+    // Nút Pause/Resume ngoài HUD — tự tìm theo tên nếu Inspector chưa gán
+    private Button nutPauseHUD;
+
+    // === KEYBOARD NAVIGATION ===
+    private Button[] cacNutPauseCache;
+    private int nutPauseDangChon = -1;
+    private readonly MenuKeyHold holdLen   = new MenuKeyHold(KeyCode.W, KeyCode.UpArrow);
+    private readonly MenuKeyHold holdXuong = new MenuKeyHold(KeyCode.S, KeyCode.DownArrow);
+
+    // === PLAYER FREEZE ===
+    private PlayerController cachedPlayer;
 
     public static PauseMenu instance;
 
@@ -56,16 +70,93 @@ public class PauseMenu : MonoBehaviour
 
         // Load settings đã lưu
         DocSettings();
+
+        // Đồng bộ màu nút Main Menu = Restart Level (nút cuối = nút giữa)
+        SyncMauNutPause();
+
+        // Tìm Btn_Pause trong scene và wire onClick → NutTogglePause
+        var goP = GameObject.Find("Btn_Pause");
+        if (goP != null)
+        {
+            nutPauseHUD = goP.GetComponent<Button>();
+            if (nutPauseHUD != null)
+            {
+                // Thay toàn bộ event (xóa cả persistent listener trong Inspector)
+                nutPauseHUD.onClick = new Button.ButtonClickedEvent();
+                nutPauseHUD.onClick.AddListener(NutTogglePause);
+            }
+        }
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.P))
+        if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.P)
+            || Input.GetMouseButtonDown(1))
         {
-            if (dangSettings) NutDongSettings();
-            else if (dangPause) NutResume();
-            else NutPause();
+            NutTogglePause();
+            return;
         }
+
+        // W/S điều hướng nút khi pause đang mở (không trong settings)
+        if (!dangPause || dangSettings) return;
+
+        float dt     = Time.unscaledDeltaTime;   // timeScale = 0 khi pause
+        bool diLen   = holdLen.Update(dt);
+        bool diXuong = holdXuong.Update(dt);
+        bool ok      = Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)
+                    || Input.GetKeyDown(KeyCode.Space);
+
+        if (diLen || diXuong)
+        {
+            if (cacNutPauseCache == null || cacNutPauseCache.Length == 0) return;
+            int soNut = cacNutPauseCache.Length;
+            if (nutPauseDangChon < 0)
+                nutPauseDangChon = diXuong ? 0 : soNut - 1;
+            else
+                nutPauseDangChon = diXuong
+                    ? (nutPauseDangChon + 1) % soNut
+                    : (nutPauseDangChon - 1 + soNut) % soNut;
+            var btn = cacNutPauseCache[nutPauseDangChon];
+            if (EventSystem.current != null)
+                EventSystem.current.SetSelectedGameObject(btn.gameObject);
+            MenuSelectionFrame.ChonNut(btn.GetComponent<RectTransform>(), tronGoc: true);
+        }
+
+        if (ok && nutPauseDangChon >= 0
+            && cacNutPauseCache != null && nutPauseDangChon < cacNutPauseCache.Length)
+            cacNutPauseCache[nutPauseDangChon].onClick.Invoke();
+    }
+
+    /// <summary>Đồng bộ màu nền và màu chữ của nút Main Menu = nút Restart Level.</summary>
+    void SyncMauNutPause()
+    {
+        var buttons = LayNutTrongPause();
+        // buttons[0]=Resume, [1]=Restart Level, [2]=Main Menu
+        if (buttons == null || buttons.Length < 3) return;
+
+        var imgRestart  = buttons[1].GetComponent<Image>();
+        var imgMainMenu = buttons[2].GetComponent<Image>();
+        if (imgRestart != null && imgMainMenu != null)
+            imgMainMenu.color = imgRestart.color;
+
+        var txtRestart  = buttons[1].GetComponentInChildren<TMPro.TextMeshProUGUI>();
+        var txtMainMenu = buttons[2].GetComponentInChildren<TMPro.TextMeshProUGUI>();
+        if (txtRestart != null && txtMainMenu != null)
+            txtMainMenu.color = txtRestart.color;
+    }
+
+    // Lấy các nút trong panelPause theo thứ tự từ trên xuống
+    Button[] LayNutTrongPause()
+    {
+        if (panelPause == null) return null;
+        var buttons = panelPause.GetComponentsInChildren<Button>(false);
+        System.Array.Sort(buttons, (a, b) =>
+        {
+            float yA = a.GetComponent<RectTransform>()?.anchoredPosition.y ?? 0f;
+            float yB = b.GetComponent<RectTransform>()?.anchoredPosition.y ?? 0f;
+            return yB.CompareTo(yA); // Y cao hơn = ở trên = ưu tiên trước
+        });
+        return buttons;
     }
 
     // =============================================================
@@ -129,15 +220,53 @@ public class PauseMenu : MonoBehaviour
     // =============================================================
     public void ThemMotLanChet() => soLanChetManNay++;
 
+    /// <summary>Toggle: mở nếu đang chơi, đóng nếu đang pause. Wire Btn_Pause vào đây.</summary>
+    public void NutTogglePause()
+    {
+        if (dangSettings) NutDongSettings();
+        else if (dangPause) NutResume();
+        else NutPause();
+    }
+
     public void NutPause()
     {
         dangPause = true;
         Time.timeScale = 0f;
         panelPause.SetActive(true);
 
+        // Đóng băng toàn bộ input nhân vật (timeScale=0 chặn physics nhưng Update vẫn chạy)
+        if (cachedPlayer == null) cachedPlayer = FindFirstObjectByType<PlayerController>();
+        if (cachedPlayer != null) cachedPlayer.enabled = false;
+
         if (txtDeathInfo != null)
             txtDeathInfo.text = "you've died <color=#F5C842>" +
                 soLanChetManNay + "</color> times on this level";
+
+        // Đưa Btn_Pause lên trên panelPause để vẫn click được khi panel đang mở
+        if (nutPauseHUD != null)
+            nutPauseHUD.transform.SetAsLastSibling();
+
+        nutPauseDangChon = 0;
+        MenuSelectionFrame.An(); // ẩn khung cũ ngay, tránh flash sai vị trí
+
+        // Đợi 1 frame để Unity tính xong layout → vị trí/kích thước nút mới chính xác
+        StartCoroutine(ChonNutPauseSauMotFrame());
+    }
+
+    IEnumerator ChonNutPauseSauMotFrame()
+    {
+        yield return null; // 1 frame = layout xong, dù timeScale = 0 vẫn chạy
+
+        cacNutPauseCache = LayNutTrongPause();
+        nutPauseDangChon = 0;
+
+        if (cacNutPauseCache != null && cacNutPauseCache.Length > 0)
+        {
+            var firstBtn = cacNutPauseCache[0];
+            if (EventSystem.current != null)
+                EventSystem.current.SetSelectedGameObject(firstBtn.gameObject);
+            MenuSelectionFrame.ChonNut(firstBtn.GetComponent<RectTransform>(), tronGoc: true);
+        }
     }
 
     public void NutResume()
@@ -145,6 +274,11 @@ public class PauseMenu : MonoBehaviour
         dangPause = false;
         Time.timeScale = 1f;
         panelPause.SetActive(false);
+        MenuSelectionFrame.An();
+        nutPauseDangChon = -1;
+
+        // Trả lại quyền điều khiển cho nhân vật
+        if (cachedPlayer != null) cachedPlayer.enabled = true;
     }
 
     public void NutRestart()

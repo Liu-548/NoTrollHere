@@ -1,6 +1,9 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 
 public class MainMenuManager : MonoBehaviour
 {
@@ -13,6 +16,14 @@ public class MainMenuManager : MonoBehaviour
     [Header("=== THAM CHIẾU UI ===")]
     public CanvasGroup canvasGroup;
 
+    // === KEYBOARD NAVIGATION ===
+    private Button[] cacNutMenu;
+    private int nutDangChon = -1;
+    private static readonly string[] TEN_NUT_MENU =
+        { "Btn_Play", "Btn_LevelSelect", "Btn_Skins", "Btn_Achievements", "Btn_Settings" };
+    private readonly MenuKeyHold holdLen   = new MenuKeyHold(KeyCode.W, KeyCode.UpArrow);
+    private readonly MenuKeyHold holdXuong = new MenuKeyHold(KeyCode.S, KeyCode.DownArrow);
+
     void Start()
     {
         StartCoroutine(FadeIn());
@@ -20,6 +31,86 @@ public class MainMenuManager : MonoBehaviour
         // Play nhạc menu
         if (SoundManager.instance != null)
             SoundManager.instance.PlayNhacMenuCh1();
+
+        KhoiTaoNavBanPhim();
+        StartCoroutine(ChonPlayMacDinh());
+    }
+
+    // Chờ 1 frame cho VerticalLayoutGroup tính toán xong vị trí nút
+    IEnumerator ChonPlayMacDinh()
+    {
+        yield return null;
+        if (cacNutMenu != null && cacNutMenu.Length > 0)
+        {
+            nutDangChon = 0;
+            ChonNutMenu(0);
+        }
+    }
+
+    void KhoiTaoNavBanPhim()
+    {
+        var ds = new List<Button>();
+        foreach (string ten in TEN_NUT_MENU)
+        {
+            var go = GameObject.Find(ten);
+            if (go != null)
+            {
+                var btn = go.GetComponent<Button>();
+                if (btn != null) ds.Add(btn);
+            }
+        }
+        cacNutMenu = ds.ToArray();
+
+        // Đồng bộ màu chữ nút Settings với các nút khác (#E8E8D0)
+        var goSettings = GameObject.Find("Btn_Settings");
+        if (goSettings != null)
+        {
+            var txt = goSettings.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+            if (txt != null) txt.color = new Color(0.91f, 0.91f, 0.82f);
+        }
+    }
+
+    void Update()
+    {
+        SettingsMenu sm = SettingsMenu.instance;
+        bool settingsMo = sm != null && sm.panelSettings != null && sm.panelSettings.activeSelf;
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (settingsMo) sm.NutDongSettings();
+            nutDangChon = -1;
+            MenuSelectionFrame.An();
+            return;
+        }
+
+        if (settingsMo || cacNutMenu == null || cacNutMenu.Length == 0) return;
+
+        float dt     = Time.unscaledDeltaTime;
+        bool diLen   = holdLen.Update(dt);
+        bool diXuong = holdXuong.Update(dt);
+        bool ok      = Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)
+                    || Input.GetKeyDown(KeyCode.Space);
+
+        if (diLen || diXuong)
+        {
+            if (nutDangChon < 0)
+                nutDangChon = diXuong ? 0 : cacNutMenu.Length - 1;
+            else
+                nutDangChon = diXuong
+                    ? (nutDangChon + 1) % cacNutMenu.Length
+                    : (nutDangChon - 1 + cacNutMenu.Length) % cacNutMenu.Length;
+            ChonNutMenu(nutDangChon);
+        }
+
+        if (ok && nutDangChon >= 0 && nutDangChon < cacNutMenu.Length)
+            cacNutMenu[nutDangChon].onClick.Invoke();
+    }
+
+    void ChonNutMenu(int idx)
+    {
+        if (EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(cacNutMenu[idx].gameObject);
+        MenuSelectionFrame.ChonNut(cacNutMenu[idx].GetComponent<RectTransform>());
     }
 
     // === NÚT PLAY ===

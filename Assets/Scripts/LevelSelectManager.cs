@@ -101,6 +101,14 @@ public class LevelSelectManager : MonoBehaviour
     private int chuongHienTai = 1;
     private string levelMoiNhat = "Level_1_1";
 
+    // === KEYBOARD NAVIGATION ===
+    private int nutLevelDangChon = -1;
+    private const int SO_COT = 4; // 4 cột trong grid
+    private readonly MenuKeyHold holdTrai  = new MenuKeyHold(KeyCode.A, KeyCode.LeftArrow);
+    private readonly MenuKeyHold holdPhai  = new MenuKeyHold(KeyCode.D, KeyCode.RightArrow);
+    private readonly MenuKeyHold holdLen   = new MenuKeyHold(KeyCode.W, KeyCode.UpArrow);
+    private readonly MenuKeyHold holdXuong = new MenuKeyHold(KeyCode.S, KeyCode.DownArrow);
+
     // Chapter cao nhất có trong build — đọc từ GameManager, fallback = 2
     private int chuongToiDa => GameManager.instance != null ? GameManager.instance.chuongToiDa : 2;
 
@@ -149,6 +157,9 @@ public class LevelSelectManager : MonoBehaviour
     // =============================================================
     void HienThiChuong(int idx)
     {
+        nutLevelDangChon = -1; // Reset keyboard selection khi đổi chương
+        MenuSelectionFrame.An();
+
         if (ChapterBackground.instance != null)
             ChapterBackground.instance.DoiChuong(idx);
 
@@ -550,6 +561,148 @@ public class LevelSelectManager : MonoBehaviour
         tIcon.alignment = TextAlignmentOptions.Center;
 
         return cell;
+    }
+
+    // =============================================================
+    // KEYBOARD NAVIGATION
+    // =============================================================
+    void Update()
+    {
+        // Dropdown đang mở — đóng khi nhấn phím nav
+        if (panelDropdown != null && panelDropdown.activeSelf)
+        {
+            bool anyNav = Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D)
+                       || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.S)
+                       || Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow)
+                       || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow)
+                       || Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Return)
+                       || Input.GetKeyDown(KeyCode.Space);
+            if (anyNav) DongDropdown();
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            MenuSelectionFrame.An();
+            NutBack();
+            return;
+        }
+
+        float dt     = Time.unscaledDeltaTime;
+        bool diTrai  = holdTrai.Update(dt);
+        bool diPhai  = holdPhai.Update(dt);
+        bool diLen   = holdLen.Update(dt);
+        bool diXuong = holdXuong.Update(dt);
+        bool ok      = Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)
+                    || Input.GetKeyDown(KeyCode.Space);
+
+        Button[] nutActive = LayNutLevelActive();
+        int soNut = nutActive != null ? nutActive.Length : 0;
+
+        // Chương Special scroll hoặc không có level nào — chỉ dùng chapter nav
+        if (soNut == 0)
+        {
+            if (diTrai) NutTrai();
+            if (diPhai) NutPhai();
+            return;
+        }
+
+        if (diTrai || diPhai || diLen || diXuong)
+        {
+            if (nutLevelDangChon < 0)
+            {
+                // Lần đầu focus vào grid
+                nutLevelDangChon = 0;
+            }
+            else
+            {
+                int col = nutLevelDangChon % SO_COT;
+                int row = nutLevelDangChon / SO_COT;
+
+                if (diTrai)
+                {
+                    if (col > 0)
+                        nutLevelDangChon--;
+                    else
+                    {
+                        // Sang chương trước
+                        nutLevelDangChon = -1;
+                        NutTrai();
+                        return;
+                    }
+                }
+                else if (diPhai)
+                {
+                    if (col < SO_COT - 1 && nutLevelDangChon + 1 < soNut)
+                        nutLevelDangChon++;
+                    else
+                    {
+                        // Sang chương sau
+                        nutLevelDangChon = -1;
+                        NutPhai();
+                        return;
+                    }
+                }
+                else if (diLen)
+                {
+                    if (row > 0) nutLevelDangChon -= SO_COT;
+                }
+                else if (diXuong)
+                {
+                    if (nutLevelDangChon + SO_COT < soNut) nutLevelDangChon += SO_COT;
+                }
+            }
+
+            nutLevelDangChon = Mathf.Clamp(nutLevelDangChon, 0, soNut - 1);
+            ChonNutLevel(nutLevelDangChon, nutActive);
+        }
+
+        if (ok && nutLevelDangChon >= 0 && nutActive != null && nutLevelDangChon < soNut)
+        {
+            var btn = nutActive[nutLevelDangChon];
+            if (btn != null && btn.interactable)
+                btn.onClick.Invoke();
+        }
+    }
+
+    Button[] LayNutLevelActive()
+    {
+        // Chương Special với scroll panel — dùng cacCellSpecial
+        if (chuongHienTai == 0 && scrollViewSpecial != null && scrollContent != null)
+        {
+            var ds = new List<Button>();
+            foreach (var cell in cacCellSpecial)
+            {
+                if (cell != null && cell.activeSelf)
+                {
+                    var btn = cell.GetComponent<Button>();
+                    if (btn != null) ds.Add(btn);
+                }
+            }
+            return ds.ToArray();
+        }
+
+        // Chương thường hoặc Special grid fallback
+        if (cacNutLevel == null) return null;
+        var result = new List<Button>();
+        foreach (var nut in cacNutLevel)
+        {
+            if (nut != null && nut.activeSelf)
+            {
+                var btn = nut.GetComponent<Button>();
+                if (btn != null) result.Add(btn);
+            }
+        }
+        return result.ToArray();
+    }
+
+    void ChonNutLevel(int idx, Button[] nuts)
+    {
+        if (nuts == null || idx < 0 || idx >= nuts.Length) return;
+        if (UnityEngine.EventSystems.EventSystem.current != null)
+            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(
+                nuts[idx].gameObject);
+        MenuSelectionFrame.ChonNut(nuts[idx].GetComponent<RectTransform>());
     }
 
     // =============================================================

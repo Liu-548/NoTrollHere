@@ -92,7 +92,7 @@ public class MainMenuBuilder : MonoBehaviour
         GameObject btnAchievements = TaoNut("Btn_Achievements", panelCenter.transform,
             "Achievements", "1A1A1A", "E8E8D0", 44f, false);
         GameObject btnSettings = TaoNut("Btn_Settings", panelCenter.transform,
-            "Settings", "1A1A1A", "888888", 40f, false, true);
+            "Settings", "1A1A1A", "E8E8D0", 40f, false, true);
 
         // === FOOTER ===
         GameObject footer = TaoTMP("Txt_Footer", canvas.transform,

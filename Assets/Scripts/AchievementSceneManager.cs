@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 using System.Collections;
+using System.Collections.Generic;
 
 public class AchievementSceneManager : MonoBehaviour
 {
@@ -26,14 +27,20 @@ public class AchievementSceneManager : MonoBehaviour
     const float ITEM_H  = 80f;
     const float SPACING = 4f;
 
+    // === KEYBOARD NAVIGATION ===
+    private List<RectTransform> cacItemRT = new List<RectTransform>();
+    private int itemHienTai = -1;
+    private ScrollRect scrollRect;
+    private readonly MenuKeyHold holdLen   = new MenuKeyHold(KeyCode.W, KeyCode.UpArrow);
+    private readonly MenuKeyHold holdXuong = new MenuKeyHold(KeyCode.S, KeyCode.DownArrow);
+
     void Start()
     {
         // Tự tìm references nếu Inspector chưa gán đúng
-        if (contentParent == null)
-        {
-            var sr = FindFirstObjectByType<ScrollRect>();
-            if (sr != null) contentParent = sr.content;
-        }
+        scrollRect = FindFirstObjectByType<ScrollRect>();
+        if (contentParent == null && scrollRect != null)
+            contentParent = scrollRect.content;
+
         if (txtTongKet == null)
             txtTongKet = GameObject.Find("Txt_TongKet")
                 ?.GetComponent<TextMeshProUGUI>();
@@ -45,16 +52,15 @@ public class AchievementSceneManager : MonoBehaviour
         if (nutBack != null)
             nutBack.onClick.AddListener(NutBack);
 
-        // Fix Viewport Mask: Image.color = clear + Mask trong Unity 6 → stencil bị cull → mọi thứ bên trong ẩn
-        // Đổi sang RectMask2D (không dùng stencil, hoạt động ổn với mọi màu nền)
+        // Fix Viewport Mask
         var mask = FindFirstObjectByType<Mask>();
         if (mask != null)
         {
             GameObject vp = mask.gameObject;
-            DestroyImmediate(mask);                         // xoá Mask cũ
+            DestroyImmediate(mask);
             var img = vp.GetComponent<Image>();
-            if (img != null) DestroyImmediate(img);        // xoá Image cũ (không cần nữa)
-            vp.AddComponent<RectMask2D>();                  // thay bằng RectMask2D
+            if (img != null) DestroyImmediate(img);
+            vp.AddComponent<RectMask2D>();
         }
 
         // Chờ 1 frame để Unity layout hoàn tất trước khi tạo item
@@ -65,6 +71,13 @@ public class AchievementSceneManager : MonoBehaviour
     {
         yield return null;
         TaiDanhSach();
+
+        // Hiển thị khung vàng trên item đầu tiên
+        if (cacItemRT.Count > 0)
+        {
+            itemHienTai = 0;
+            MenuSelectionFrame.ChonNut(cacItemRT[0]);
+        }
     }
 
     void TaiDanhSach()
@@ -80,9 +93,10 @@ public class AchievementSceneManager : MonoBehaviour
             return;
         }
 
-        // Xoá item cũ (phòng bị gọi lại)
+        // Xoá item cũ
         for (int i = contentParent.childCount - 1; i >= 0; i--)
             Destroy(contentParent.GetChild(i).gameObject);
+        cacItemRT.Clear();
 
         var danhSach = AchievementManager.instance.LayDanhSach();
         int daMo     = AchievementManager.instance.LaySoLuongDaMo();
@@ -103,8 +117,7 @@ public class AchievementSceneManager : MonoBehaviour
         contentParent.sizeDelta = new Vector2(contentParent.sizeDelta.x, tongCao);
 
         // Cuộn lên đầu danh sách
-        var sr = contentParent.GetComponentInParent<ScrollRect>();
-        if (sr != null) sr.verticalNormalizedPosition = 1f;
+        if (scrollRect != null) scrollRect.verticalNormalizedPosition = 1f;
     }
 
     void TaoItem(AchievementManager.ThanhTuu tt, float y)
@@ -122,7 +135,10 @@ public class AchievementSceneManager : MonoBehaviour
         rcRow.anchoredPosition = new Vector2(0f, y);
         row.AddComponent<Image>().color = tt.daUnlock ? mauNen : mauNenKhoa;
 
-        // === ICON (chấm màu bên trái) ===
+        // Ghi nhớ để keyboard nav
+        cacItemRT.Add(rcRow);
+
+        // === ICON ===
         GameObject icon = new GameObject("Icon");
         icon.transform.SetParent(row.transform, false);
         RectTransform rcIcon = icon.AddComponent<RectTransform>();
@@ -176,6 +192,52 @@ public class AchievementSceneManager : MonoBehaviour
         rcLine.sizeDelta        = new Vector2(0f, 1f);
         rcLine.anchoredPosition = Vector2.zero;
         line.AddComponent<Image>().color = mauDuongKe;
+    }
+
+    // =========================================================
+    // KEYBOARD NAVIGATION
+    // =========================================================
+    void Update()
+    {
+        float dt     = Time.unscaledDeltaTime;
+        bool diLen   = holdLen.Update(dt);
+        bool diXuong = holdXuong.Update(dt);
+
+        if ((diLen || diXuong) && cacItemRT.Count > 0)
+        {
+            if (itemHienTai < 0)
+                itemHienTai = 0;
+            else if (diXuong)
+                itemHienTai = Mathf.Min(itemHienTai + 1, cacItemRT.Count - 1);
+            else
+                itemHienTai = Mathf.Max(itemHienTai - 1, 0);
+
+            MenuSelectionFrame.ChonNut(cacItemRT[itemHienTai]);
+            CuonDenItem(itemHienTai);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            MenuSelectionFrame.An();
+            NutBack();
+        }
+    }
+
+    /// <summary>Auto-cuộn ScrollRect để item đang chọn nằm giữa viewport.</summary>
+    void CuonDenItem(int idx)
+    {
+        if (scrollRect == null || contentParent == null) return;
+
+        float contentHeight  = contentParent.sizeDelta.y;
+        float viewportHeight = scrollRect.viewport != null
+            ? scrollRect.viewport.rect.height
+            : scrollRect.GetComponent<RectTransform>().rect.height;
+        float scrollRange = contentHeight - viewportHeight;
+        if (scrollRange <= 0f) return;
+
+        float itemCenterFromTop = idx * (ITEM_H + SPACING) + ITEM_H * 0.5f;
+        float targetTop = Mathf.Clamp(itemCenterFromTop - viewportHeight * 0.5f, 0f, scrollRange);
+        scrollRect.verticalNormalizedPosition = 1f - targetTop / scrollRange;
     }
 
     public void NutBack()

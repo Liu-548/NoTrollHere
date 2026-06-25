@@ -6,16 +6,16 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/MainMenu/MainMenu.unity
+    path: Assets/Scenes/Menu/MainMenu.unity
     guid: 2c800357b637a4742a2fb4a75c5b446d
   - enabled: 1
-    path: Assets/Scenes/MainMenu/SkinSelect.unity
+    path: Assets/Scenes/Menu/SkinSelect.unity
     guid: 430eaf88c16447047a15d8648ecdbf70
   - enabled: 1
-    path: Assets/Scenes/MainMenu/LevelSelect.unity
+    path: Assets/Scenes/Menu/LevelSelect.unity
     guid: 6a91f4bd5769ea045b2dda4788f46c57
   - enabled: 1
-    path: Assets/Scenes/MainMenu/Achievements.unity
+    path: Assets/Scenes/Menu/Achievements.unity
     guid: 58a49e065844c8b478300064da519fdb
   - enabled: 1
     path: Assets/Scenes/ChuongSpecial/Level_S_0.unity

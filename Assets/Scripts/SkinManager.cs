@@ -160,20 +160,33 @@ public class SkinManager : MonoBehaviour
         anim.applyRootMotion = false;
 
         // Cập nhật BoxCollider2D theo cấu hình thủ công của skin (nếu có)
+        BoxCollider2D col2 = player.GetComponent<BoxCollider2D>();
+        PlayerController pc2 = player.GetComponent<PlayerController>();
         if (sa != null && (sa.colSize != Vector2.zero || sa.colOffset != Vector2.zero))
         {
-            BoxCollider2D col = player.GetComponent<BoxCollider2D>();
-            PlayerController pc = player.GetComponent<PlayerController>();
-            if (col != null && pc != null)
+            if (col2 != null && pc2 != null)
             {
-                if (sa.colSize   != Vector2.zero) { col.size   = sa.colSize;   pc.kichThuocColGoc = sa.colSize;   }
-                if (sa.colOffset != Vector2.zero) { col.offset = sa.colOffset; pc.offsetColGoc    = sa.colOffset; }
+                if (sa.colSize   != Vector2.zero) { col2.size   = sa.colSize;   pc2.kichThuocColGoc = sa.colSize;   }
+                if (sa.colOffset != Vector2.zero) { col2.offset = sa.colOffset; pc2.offsetColGoc    = sa.colOffset; }
             }
         }
+        else if (pc2 != null && col2 != null)
+        {
+            // Reset về giá trị gốc khi đổi sang skin không có colSize/colOffset
+            col2.size   = pc2.kichThuocColGoc;
+            col2.offset = pc2.offsetColGoc;
+        }
+
     }
 
     public string LaySkinDangDung() => skinDangDung;
     public List<Skin> LayDanhSach() => danhSachSkin;
+
+    public void ReloadUnlocks()
+    {
+        foreach (var skin in danhSachSkin)
+            skin.daUnlock = PlayerPrefs.GetInt("Skin_" + skin.id + "_unlocked", 0) == 1;
+    }
 
     // =============================================================
     // MỞ SKIN — gọi từ AchievementManager

@@ -143,7 +143,6 @@ public class SkinSelectManager : MonoBehaviour
             CanvasGroup cg = nutTrai.GetComponent<CanvasGroup>();
             if (cg != null)
                 cg.alpha = coTrai ? 1f : 0.25f;
-            // blocksRaycasts không dùng — alpha propagation ảnh hưởng con nếu có
         }
         if (nutPhai != null)
         {
@@ -152,6 +151,23 @@ public class SkinSelectManager : MonoBehaviour
             CanvasGroup cg = nutPhai.GetComponent<CanvasGroup>();
             if (cg != null)
                 cg.alpha = coPhai ? 1f : 0.25f;
+        }
+
+        // Đảm bảo nutBack luôn hiển thị, độc lập với alpha của Btn_Trai parent
+        if (nutBack != null)
+        {
+            nutBack.interactable = true;
+            var img = nutBack.GetComponent<Image>();
+            if (img != null) img.color = new Color(0.16f, 0.16f, 0.16f, 1f);
+
+            // Thêm CanvasGroup riêng nếu chưa có, set ignoreParentGroups
+            // để không bị ảnh hưởng bởi alpha của Btn_Trai
+            var cg2 = nutBack.GetComponent<CanvasGroup>();
+            if (cg2 == null) cg2 = nutBack.gameObject.AddComponent<CanvasGroup>();
+            cg2.alpha = 1f;
+            cg2.ignoreParentGroups = true;
+            cg2.interactable = true;
+            cg2.blocksRaycasts = true;
         }
     }
 
@@ -195,6 +211,26 @@ public class SkinSelectManager : MonoBehaviour
             btn.onClick.RemoveAllListeners();
             btn.onClick.AddListener(action);
         }
+    }
+
+    private readonly MenuKeyHold holdTrai = new MenuKeyHold(KeyCode.A, KeyCode.LeftArrow);
+    private readonly MenuKeyHold holdPhai = new MenuKeyHold(KeyCode.D, KeyCode.RightArrow);
+
+    void Update()
+    {
+        if (danhSach == null) return;
+
+        float dt    = Time.unscaledDeltaTime;
+        bool diTrai = holdTrai.Update(dt);
+        bool diPhai = holdPhai.Update(dt);
+        bool ok     = Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)
+                   || Input.GetKeyDown(KeyCode.Space);
+        bool back   = Input.GetKeyDown(KeyCode.Escape);
+
+        if (diTrai) NutTrai();
+        if (diPhai) NutPhai();
+        if (ok)     NutChon();
+        if (back)   NutBack();
     }
 
     public void NutTrai()
