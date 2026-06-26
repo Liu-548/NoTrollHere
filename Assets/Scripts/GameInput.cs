@@ -99,11 +99,11 @@ public class GameInput : MonoBehaviour
     // ─── MOBILE INPUT METHODS (gọi từ MobileUIOverlay) ──────────────────
     public void SetVirtualMove(Vector2 dir) => virtualMove = dir;
 
-    public void SetVirtualJump(bool held)
-    {
-        if (held && !virtualJumpHeld) virtualJumpPressed = true;
-        virtualJumpHeld = held;
-    }
+    // Gọi từ MobileUIOverlay.Update() để cập nhật trạng thái giữ nút
+    public void SetVirtualJump(bool held) => virtualJumpHeld = held;
+
+    // Gọi từ MobileUIOverlay trực tiếp khi PointerDown — không phụ thuộc vào virtualJumpHeld
+    public void FireVirtualJumpPress() => virtualJumpPressed = true;
 
     public void SetVirtualCrouch(bool held) => virtualCrouchHeld = held;
 

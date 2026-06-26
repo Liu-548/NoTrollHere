@@ -35,6 +35,11 @@ public class GravityFlipper : MonoBehaviour
             sr               = player.GetComponent<SpriteRenderer>();
             playerController = player.GetComponent<PlayerController>();
             col              = player.GetComponent<Collider2D>();
+
+            // Nếu GravityFlipper là object riêng (không phải component của Player),
+            // PlayerController.Awake() không tìm thấy → set ngược lại ở đây
+            if (playerController != null && playerController.gravityFlipper == null)
+                playerController.gravityFlipper = this;
         }
 
         if (rb == null) Debug.LogError("[GravityFlipper] Không tìm thấy Rigidbody2D! Kéo Player vào field 'player' hoặc đặt tag 'Player'.", this);
@@ -54,7 +59,9 @@ public class GravityFlipper : MonoBehaviour
         // - Đang đảo chiều       → phải đứng trên trần (normal.y < 0)
         if (yeuCauMatDat)
         {
-            bool hopLe = dangDaoChieu ? DangDungTrenTran() : playerController != null && playerController.dangDungTrenDat;
+            bool hopLe = dangDaoChieu
+                ? DangDungTrenTran()
+                : playerController != null && playerController.dangDungTrenDat;
             if (!hopLe) return;
         }
 
@@ -64,9 +71,13 @@ public class GravityFlipper : MonoBehaviour
         sr.flipY = dangDaoChieu;
     }
 
-    // Kiểm tra nhân vật đang chạm trần (contact normal hướng xuống)
+    // Kiểm tra nhân vật đang chạm trần.
+    // Dùng dangDungTrenDat từ PlayerController (tính với gravSign trong FixedUpdate)
+    // thay vì đọc contact trực tiếp từ Update — tránh lệch timing.
     bool DangDungTrenTran()
     {
+        if (playerController != null) return playerController.dangDungTrenDat;
+        // Fallback nếu không có PlayerController
         if (col == null) return false;
         ContactPoint2D[] contacts = new ContactPoint2D[10];
         int count = col.GetContacts(contacts);

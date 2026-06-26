@@ -57,8 +57,8 @@ public class PlayerController : MonoBehaviour
     private bool dangEpVaoTuong = false;
     private float footstepTimer = 0f;
 
-    // Tham chiếu GravityFlipper (nếu có) — dùng để xác định chiều "mặt đất"
-    private GravityFlipper gravityFlipper;
+    // Tham chiếu GravityFlipper — được set bởi GravityFlipper.Start() nếu là object riêng
+    [HideInInspector] public GravityFlipper gravityFlipper;
 
     // Lò xo
     private float lucLoXo = 0f;
@@ -86,7 +86,13 @@ public class PlayerController : MonoBehaviour
         animator        = GetComponent<Animator>();
         sr              = GetComponent<SpriteRenderer>();
         col             = GetComponent<BoxCollider2D>();
-        gravityFlipper  = GetComponent<GravityFlipper>();
+        // Thử tìm trên cùng GameObject trước; nếu GravityFlipper là object riêng,
+        // GravityFlipper.Start() sẽ gán ngược lại qua playerController.gravityFlipper = this
+        gravityFlipper = GetComponent<GravityFlipper>();
+
+        // Continuous: tránh tunneling khi tăng tốc đột ngột (đặc biệt khi flip gravity)
+        if (rb != null)
+            rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
         // Lưu giá trị collider gốc trong Awake để SkinApplier.Start() có thể ghi đè đúng thứ tự
         if (col != null)
@@ -137,9 +143,9 @@ public class PlayerController : MonoBehaviour
         bool virtualJump      = gi.JumpPressed && !wXuong && !spaceXuong;
         bool virtualJumpHeld  = gi.JumpHeld    && !wGiu   && !spaceGiu;
 
-        // Nút nhảy ảo (mobile) cũng kích hoạt script nếu được cấu hình
-        if (virtualJump && wGanScript)     onWPressed?.Invoke();
-        if (virtualJump && spaceGanScript) onSpacePressed?.Invoke();
+        // Nút nhảy ảo (mobile) kích hoạt đúng 1 event — ưu tiên wGanScript (Up = W key)
+        if (virtualJump && wGanScript)          onWPressed?.Invoke();
+        else if (virtualJump && spaceGanScript) onSpacePressed?.Invoke();
 
         bool nutNhayXuong = (!wGanScript && wXuong)
                          || (!spaceGanScript && spaceXuong)
@@ -237,9 +243,23 @@ public class PlayerController : MonoBehaviour
             dangNgoi = true;
             if (col != null)
             {
-                col.size   = new Vector2(kichThuocColGoc.x, kichThuocColGoc.y * 0.5f);
-                col.offset = new Vector2(offsetColGoc.x, offsetColGoc.y - kichThuocColGoc.y * 0.25f);
-                Physics2D.SyncTransforms(); // đồng bộ ngay để tránh mất contact 1 frame
+                bool daoNguocNgoi = gravityFlipper != null && gravityFlipper.dangDaoChieu;
+
+                col.size = new Vector2(kichThuocColGoc.x, kichThuocColGoc.y * 0.5f);
+
+                if (daoNguocNgoi)
+                {
+                    // Trần: dịch offset LÊN h/4 → đỉnh collider ở cùng vị trí, không nhô vào tile
+                    col.size   = new Vector2(kichThuocColGoc.x, kichThuocColGoc.y * 0.5f);
+                    col.offset = new Vector2(offsetColGoc.x, offsetColGoc.y + kichThuocColGoc.y * 0.25f);
+                    Physics2D.SyncTransforms();
+                }
+                else
+                {
+                    // Dưới sàn: dịch offset xuống để chân vẫn chạm sàn
+                    col.offset = new Vector2(offsetColGoc.x, offsetColGoc.y - kichThuocColGoc.y * 0.25f);
+                    Physics2D.SyncTransforms();
+                }
             }
         }
         // Đứng dậy: CHỈ khi THẢ nút S — không phụ thuộc dangDungTrenDat
@@ -251,6 +271,8 @@ public class PlayerController : MonoBehaviour
                 dangNgoi = false;
                 if (col != null)
                 {
+                    // Trần: crouched offset = offsetColGoc + h/4, top ở cùng Y với full collider
+                    //        → restore về gốc, top không thay đổi → không nhô vào tile trần.
                     col.size   = kichThuocColGoc;
                     col.offset = offsetColGoc;
                 }
@@ -262,9 +284,15 @@ public class PlayerController : MonoBehaviour
     {
         if (col == null) return true;
 
-        // OverlapBox ở vị trí đứng đầy đủ chiều cao, trừ phần dưới chân
+        // Kiểm tra khoảng trống phía "đầu" nhân vật để đứng dậy.
+        // Bình thường: phía trên (+y) = kiểm tra vùng đầu.
+        // Đảo ngược: khi crouched trên trần, offset = offsetColGoc + h/4, top vẫn ở trần.
+        //   Cần check phía dưới (-y, hướng xa trần) để biết nửa dưới full collider có chỗ không.
+        bool daoNguocDung = gravityFlipper != null && gravityFlipper.dangDaoChieu;
+        float huong       = daoNguocDung ? -1f : 1f;
+
         Vector2 center = (Vector2)transform.position
-                       + new Vector2(offsetColGoc.x, offsetColGoc.y + kichThuocColGoc.y * 0.25f);
+                       + new Vector2(offsetColGoc.x, offsetColGoc.y + huong * kichThuocColGoc.y * 0.25f);
         Vector2 size   = new Vector2(kichThuocColGoc.x * 0.9f, kichThuocColGoc.y * 0.5f);
 
         return Physics2D.OverlapBox(center, size, 0f, layerMatDat) == null;
@@ -396,7 +424,14 @@ public class PlayerController : MonoBehaviour
     {
         if (dangLeoDay) return;
         // Kiểm tra đất TRƯỚC tường — nếu vừa đứng đất vừa sát tường → vẫn dùng gravity bình thường
-        if (dangDungTrenDat) { rb.gravityScale = 1f; return; }
+        if (dangDungTrenDat)
+        {
+            // Khi trọng lực đảo ngược, dùng trongLucRoi thay vì 1f để giữ tiếp xúc trần ổn định.
+            // GravityFlipper.LateUpdate() sẽ đảo dấu → -trongLucRoi (ép chặt vào trần).
+            bool daoNguocTrenDat = gravityFlipper != null && gravityFlipper.dangDaoChieu;
+            rb.gravityScale = daoNguocTrenDat ? trongLucRoi : 1f;
+            return;
+        }
         if (dangEpVaoTuong) { rb.gravityScale = trongLucRoi; return; }
 
         if (rb.linearVelocity.y < 0)
