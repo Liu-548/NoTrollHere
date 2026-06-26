@@ -57,6 +57,9 @@ public class PlayerController : MonoBehaviour
     private bool dangEpVaoTuong = false;
     private float footstepTimer = 0f;
 
+    // Tham chiếu GravityFlipper (nếu có) — dùng để xác định chiều "mặt đất"
+    private GravityFlipper gravityFlipper;
+
     // Lò xo
     private float lucLoXo = 0f;
     private Vector2 huongLoXo = Vector2.up;
@@ -79,10 +82,11 @@ public class PlayerController : MonoBehaviour
 
     void Awake()
     {
-        rb       = GetComponent<Rigidbody2D>();
-        animator = GetComponent<Animator>();
-        sr       = GetComponent<SpriteRenderer>();
-        col      = GetComponent<BoxCollider2D>();
+        rb              = GetComponent<Rigidbody2D>();
+        animator        = GetComponent<Animator>();
+        sr              = GetComponent<SpriteRenderer>();
+        col             = GetComponent<BoxCollider2D>();
+        gravityFlipper  = GetComponent<GravityFlipper>();
 
         // Lưu giá trị collider gốc trong Awake để SkinApplier.Start() có thể ghi đè đúng thứ tự
         if (col != null)
@@ -149,6 +153,15 @@ public class PlayerController : MonoBehaviour
         {
             muonNhay = true;
             dangNhayAnim = true;        // Bật ngay khi bấm nhảy
+            thoiGianDaGiuNhay = 0f;
+            if (SoundManager.instance != null)
+                SoundManager.instance.PlayNhay();
+        }
+        // Giữ nút nhảy → tự động nhảy lại khi vừa chạm đất (auto-jump khi hold)
+        else if (nutNhayGiu && dangDungTrenDat && !dangNgoi && !muonNhay)
+        {
+            muonNhay = true;
+            dangNhayAnim = true;
             thoiGianDaGiuNhay = 0f;
             if (SoundManager.instance != null)
                 SoundManager.instance.PlayNhay();
@@ -316,7 +329,12 @@ public class PlayerController : MonoBehaviour
     void Nhay()
     {
         if (muonNhay && dangDungTrenDat && !dangNgoi)
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, lucNhay);
+        {
+            // Khi trọng lực đảo ngược, nhảy phải đẩy theo hướng ngược (xuống)
+            bool daoNguoc = gravityFlipper != null && gravityFlipper.dangDaoChieu;
+            float huongNhay = daoNguoc ? -lucNhay : lucNhay;
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, huongNhay);
+        }
         muonNhay = false;
 
         if (dangNayLoXo)
@@ -346,9 +364,15 @@ public class PlayerController : MonoBehaviour
             ? col.GetContacts(contacts)
             : GetComponent<Collider2D>().GetContacts(contacts);
 
+        // FixedUpdate chạy sau LateUpdate của frame trước → gravityScale đã được
+        // GravityFlipper đảo dấu đúng: dương = trọng lực bình thường, âm = đảo ngược.
+        // Trọng lực bình thường  → mặt đất có normal.y > 0 (hướng lên)
+        // Trọng lực đảo ngược   → "mặt đất" là trần, normal.y < 0 (hướng xuống)
+        float gravSign = rb.gravityScale >= 0 ? 1f : -1f;
+
         for (int i = 0; i < soContact; i++)
         {
-            if (contacts[i].normal.y > 0.5f)
+            if (contacts[i].normal.y * gravSign > 0.5f)
             {
                 dangDungTrenDat = true;
                 break;
@@ -398,13 +422,20 @@ public class PlayerController : MonoBehaviour
     {
         if (animator == null) return;
 
-        // Đặt lại cờ nhảy khi chạm đất và không còn đà lên
-        if (dangDungTrenDat && rb.linearVelocity.y <= 0f)
+        // GravityFlipper.LateUpdate chưa chạy ở thời điểm này (Update đang chạy),
+        // nên dùng dangDaoChieu thay vì rb.gravityScale để biết chiều trọng lực.
+        bool daoNguoc = gravityFlipper != null && gravityFlipper.dangDaoChieu;
+
+        // Đặt lại cờ nhảy khi đã chạm "mặt đất" và không còn đà thoát khỏi nó.
+        // Bình thường: không đà lên (velY ≤ 0). Đảo ngược: không đà xuống (velY ≥ 0).
+        bool daHetDaNhay = daoNguoc ? rb.linearVelocity.y >= 0f : rb.linearVelocity.y <= 0f;
+        if (dangDungTrenDat && daHetDaNhay)
             dangNhayAnim = false;
 
         float velY      = rb.linearVelocity.y;
         bool trongKhong = !dangDungTrenDat;
-        bool dangRoi    = trongKhong && velY < -0.1f;
+        // Đang rơi = di chuyển theo chiều trọng lực (xuống bình thường, lên khi đảo)
+        bool dangRoi    = trongKhong && (daoNguoc ? velY > 0.1f : velY < -0.1f);
 
         animator.SetFloat("Speed",      Mathf.Abs(rb.linearVelocity.x));
         animator.SetBool("IsGrounded",  dangDungTrenDat);
