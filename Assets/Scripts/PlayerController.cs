@@ -99,31 +99,51 @@ public class PlayerController : MonoBehaviour
         if (thoiGianKhoaLeoDay > 0)
             thoiGianKhoaLeoDay -= Time.deltaTime;
 
+        var gi = GameInput.instance;
+        if (gi == null) return; // GameInput chưa khởi tạo (an toàn trên mọi nền tảng)
+
         // === INPUT NGANG ===
         // Nút A/D: nếu ganScript → gọi event khi bấm, không di chuyển
-        if (Input.GetKeyDown(nutTrai) && aGanScript) onAPressed?.Invoke();
-        if (Input.GetKeyDown(nutPhai) && dGanScript) onDPressed?.Invoke();
+        if (gi.ADown && aGanScript) onAPressed?.Invoke();
+        if (gi.DDown && dGanScript) onDPressed?.Invoke();
 
         huongNgang = 0f;
-        if (!aGanScript && Input.GetKey(nutTrai))  huongNgang -= 1f;
-        if (!dGanScript && Input.GetKey(nutPhai))  huongNgang += 1f;
-        huongNgang = Mathf.Clamp(huongNgang, -1f, 1f);
+        if (!aGanScript && !dGanScript)
+        {
+            huongNgang = gi.HuongNgang;
+        }
+        else
+        {
+            if (!aGanScript) huongNgang -= gi.AHeld ? 1f : 0f;
+            if (!dGanScript) huongNgang += gi.DHeld ? 1f : 0f;
+            huongNgang = Mathf.Clamp(huongNgang, -1f, 1f);
+        }
 
         // === NHẢY ===
-        bool spaceXuong = Input.GetKeyDown(KeyCode.Space);
-        bool spaceGiu   = Input.GetKey(KeyCode.Space);
-        bool wXuong     = Input.GetKeyDown(nutNhayLeo);
-        bool wGiu       = Input.GetKey(nutNhayLeo);
+        bool spaceXuong = gi.SpaceDown;
+        bool spaceGiu   = gi.SpaceHeld;
+        bool wXuong     = gi.WDown;
+        bool wGiu       = gi.WHeld;
 
         // Nút có script riêng → kích hoạt event rồi bỏ qua chức năng mặc định
         if (spaceXuong && spaceGanScript) onSpacePressed?.Invoke();
         if (wXuong     && wGanScript)     onWPressed?.Invoke();
 
+        // Virtual jump (mobile): chỉ tính khi không bị keyboard chặn
+        bool virtualJump      = gi.JumpPressed && !wXuong && !spaceXuong;
+        bool virtualJumpHeld  = gi.JumpHeld    && !wGiu   && !spaceGiu;
+
+        // Nút nhảy ảo (mobile) cũng kích hoạt script nếu được cấu hình
+        if (virtualJump && wGanScript)     onWPressed?.Invoke();
+        if (virtualJump && spaceGanScript) onSpacePressed?.Invoke();
+
         bool nutNhayXuong = (!wGanScript && wXuong)
-                         || (!spaceGanScript && spaceXuong);
+                         || (!spaceGanScript && spaceXuong)
+                         || (virtualJump && !wGanScript && !spaceGanScript);
 
         bool nutNhayGiu   = (!wGanScript && wGiu)
-                         || (!spaceGanScript && spaceGiu);
+                         || (!spaceGanScript && spaceGiu)
+                         || (virtualJumpHeld && !wGanScript && !spaceGanScript);
 
         if (nutNhayXuong && !dangNgoi)
         {
@@ -150,6 +170,7 @@ public class PlayerController : MonoBehaviour
         {
             bool thoatLeoDay = (!wGanScript && wXuong)
                             || (!spaceGanScript && spaceXuong);
+                            // virtualJump (nút UI) không thoát dây — dùng để leo lên qua virtualMove.y
             if (thoatLeoDay)
             {
                 KetThucLeoDay();
@@ -161,7 +182,7 @@ public class PlayerController : MonoBehaviour
         }
 
         // Nút S: gọi event nếu ganScript
-        if (Input.GetKeyDown(nutXuongNgoi) && sGanScript) onSPressed?.Invoke();
+        if (gi.SDown && sGanScript) onSPressed?.Invoke();
 
         // === NGỒI ===
         XuLyNgoi();
@@ -194,7 +215,8 @@ public class PlayerController : MonoBehaviour
     {
         if (dangLeoDay) return; // không ngồi khi leo dây
 
-        bool nutXuongGiu = !sGanScript && Input.GetKey(nutXuongNgoi);
+        var gi2 = GameInput.instance;
+        bool nutXuongGiu = !sGanScript && gi2 != null && gi2.CrouchHeld;
 
         // Bắt đầu ngồi: chỉ khi đứng trên đất VÀ giữ S
         if (nutXuongGiu && dangDungTrenDat && !dangNgoi)
@@ -263,9 +285,9 @@ public class PlayerController : MonoBehaviour
     // ─────────────────────────────────────────────
     void DiChuyenLeoDay()
     {
-        float huongDoc = 0f;
-        if (!wGanScript && Input.GetKey(nutNhayLeo))       huongDoc =  1f;
-        else if (!sGanScript && Input.GetKey(nutXuongNgoi)) huongDoc = -1f;
+        float huongDoc = GameInput.instance != null ? GameInput.instance.HuongDoc : 0f;
+        if (wGanScript)  huongDoc = Mathf.Min(huongDoc, 0f); // W bị ganScript → không leo lên
+        if (sGanScript)  huongDoc = Mathf.Max(huongDoc, 0f); // S bị ganScript → không leo xuống
 
         rb.linearVelocity = new Vector2(
             huongNgang * tocDoChay * 0.5f,

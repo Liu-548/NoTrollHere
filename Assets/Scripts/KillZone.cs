@@ -13,14 +13,21 @@ public class KillZone : MonoBehaviour
     {
         if (!vatTheChamVao.CompareTag("Player")) return;
 
-        // Báo cho AchievementManager biết loại bẫy
-        if (AchievementManager.instance != null)
-            AchievementManager.instance.KiemTraSauKhiChet(loaiBay);
-
         DeathEffect effect = vatTheChamVao.GetComponent<DeathEffect>();
         if (effect != null)
-            effect.KichHoatHieuUng();
+        {
+            // Nếu đang chết rồi (dangChet=true) → bỏ qua hoàn toàn
+            if (!effect.KichHoatHieuUng()) return;
+        }
         else
+        {
+            // Không có DeathEffect → dùng guard của GameManager
+            if (!GameManager.CoTheXuLyChet()) return;
             GameManager.instance.PlayerChet();
+        }
+
+        // Chỉ báo Achievement khi đây là cú chết thực sự (không bị block)
+        if (AchievementManager.instance != null)
+            AchievementManager.instance.KiemTraSauKhiChet(loaiBay);
     }
 }

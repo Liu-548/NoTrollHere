@@ -5,10 +5,27 @@ public class DeathCounterUI : MonoBehaviour
 {
     public TextMeshProUGUI deathText;
 
+    void Awake()
+    {
+        if (deathText == null)
+            deathText = GetComponent<TextMeshProUGUI>();
+    }
+
+    void Start()
+    {
+        // Set text ngay frame đầu để không flicker với default của prefab
+        CapNhat();
+    }
+
     void Update()
     {
-        if (GameManager.instance == null) return;
-        // Chỉ tính số chết màn hiện tại
-        deathText.text = "DEATHS : " + GameManager.instance.LaySoLanChet();
+        CapNhat();
+    }
+
+    void CapNhat()
+    {
+        if (deathText == null) return;
+        // Gọi static — không cần GameManager.instance, không bị ảnh hưởng bởi DDOL
+        deathText.text = "DEATHS : " + GameManager.LaySoLanChet();
     }
 }

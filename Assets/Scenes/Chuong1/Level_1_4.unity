@@ -220,7 +220,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3862368895801865808, guid: bf464fb943b74364ebe062c441285394, type: 3}
       propertyPath: lucBan
-      value: 20
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 4216125941178927274, guid: bf464fb943b74364ebe062c441285394, type: 3}
       propertyPath: m_Name
@@ -1264,7 +1264,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3862368895801865808, guid: bf464fb943b74364ebe062c441285394, type: 3}
       propertyPath: lucBan
-      value: 20
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 4216125941178927274, guid: bf464fb943b74364ebe062c441285394, type: 3}
       propertyPath: m_Name
@@ -1359,7 +1359,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3862368895801865808, guid: bf464fb943b74364ebe062c441285394, type: 3}
       propertyPath: lucBan
-      value: 20
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 4216125941178927274, guid: bf464fb943b74364ebe062c441285394, type: 3}
       propertyPath: m_Name
@@ -3457,11 +3457,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7893885756482712687, guid: e9b08cdcaec9e944399e61ecdab08378, type: 3}
       propertyPath: m_Size.x
-      value: 1.9672949
+      value: 1.8366094
+      objectReference: {fileID: 0}
+    - target: {fileID: 7893885756482712687, guid: e9b08cdcaec9e944399e61ecdab08378, type: 3}
+      propertyPath: m_Size.y
+      value: 1.204617
       objectReference: {fileID: 0}
     - target: {fileID: 7893885756482712687, guid: e9b08cdcaec9e944399e61ecdab08378, type: 3}
       propertyPath: m_Offset.x
-      value: -0.48364747
+      value: -0.41830468
+      objectReference: {fileID: 0}
+    - target: {fileID: 7893885756482712687, guid: e9b08cdcaec9e944399e61ecdab08378, type: 3}
+      propertyPath: m_Offset.y
+      value: 1.0563052
       objectReference: {fileID: 0}
     - target: {fileID: 8772641856176549057, guid: e9b08cdcaec9e944399e61ecdab08378, type: 3}
       propertyPath: cheDoTrigger

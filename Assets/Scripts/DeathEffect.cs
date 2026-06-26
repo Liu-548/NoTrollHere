@@ -14,6 +14,7 @@ public class DeathEffect : MonoBehaviour
     private Color mauGoc;
     private PlayerController playerController;
     private Rigidbody2D rb;
+    private bool dangChet = false; // chặn nhiều KillZone kích hoạt cùng lúc
 
     void Start()
     {
@@ -23,9 +24,13 @@ public class DeathEffect : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
-    public void KichHoatHieuUng()
+    // Trả về true nếu bắt đầu hiệu ứng, false nếu đang chết rồi
+    public bool KichHoatHieuUng()
     {
+        if (dangChet) return false;
+        dangChet = true;
         StartCoroutine(ChayHieuUng());
+        return true;
     }
 
     IEnumerator ChayHieuUng()
@@ -76,9 +81,7 @@ public class DeathEffect : MonoBehaviour
                 yield return new WaitForSeconds(thoiGianRung);
         }
 
-        if (rb != null)
-            rb.bodyType = RigidbodyType2D.Dynamic;
-
+        // Không restore Dynamic — scene sẽ reload ngay, tránh re-trigger OnTriggerEnter2D
         GameManager.instance.PlayerChet();
     }
 }

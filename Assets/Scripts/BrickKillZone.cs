@@ -26,7 +26,7 @@ public class BrickKillZone : MonoBehaviour
                 {
                     effect.KichHoatHieuUng();
                 }
-                else
+                else if (GameManager.CoTheXuLyChet())
                 {
                     GameManager.instance.PlayerChet();
                 }

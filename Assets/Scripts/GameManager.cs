@@ -1,13 +1,16 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
-    private int soLanChet = 0;
-    private int tongSoLanChetSession = 0;
+    // static → tồn tại toàn session, không mất khi instance GameManager thay đổi
+    private static int soLanChet = 0;
+    private static int tongSoLanChetSession = 0;
+    private static bool dangXuLyChet = false; // chặn PlayerChet() bị gọi nhiều lần cùng lúc
 
     [Header("=== CẤU HÌNH LEVEL ===")]
     public int soManMoiChuong = 8; // Mỗi chương có 8 màn, qua hết → mở chương tiếp
@@ -43,9 +46,12 @@ public class GameManager : MonoBehaviour
 
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // Mỗi scene tự có EventSystem riêng — chỉ tạo nếu scene không có
+        dangXuLyChet = false; // scene mới → cho phép chết lại
         DamBaoCoEventSystem();
     }
+
+    // Gọi khi chọn level từ LevelSelect / MainMenu Play (để reset bộ đếm cho màn mới)
+    public static void ResetSoLanChet() { soLanChet = 0; }
 
     void DamBaoCoEventSystem()
     {
@@ -56,7 +62,7 @@ public class GameManager : MonoBehaviour
             // Scene không có EventSystem → tạo mới cho scene này (KHÔNG DontDestroyOnLoad)
             GameObject goES = new GameObject("EventSystem");
             goES.AddComponent<EventSystem>();
-            goES.AddComponent<StandaloneInputModule>();
+            goES.AddComponent<InputSystemUIInputModule>();
             Debug.Log($"[GameManager] Tạo EventSystem cho scene: {SceneManager.GetActiveScene().name}");
         }
         else if (tatCaES.Length > 1)
@@ -115,6 +121,8 @@ public class GameManager : MonoBehaviour
     // =============================================================
     public void PlayerChet()
     {
+        if (dangXuLyChet) return;
+        dangXuLyChet = true;
         soLanChet++;
         tongSoLanChetSession++;
 
@@ -252,7 +260,10 @@ public class GameManager : MonoBehaviour
     public bool LaChapterSpecialDaMo()
         => PlayerPrefs.GetInt("Chapter_Special_unlocked", 0) == 1;
 
-    public int LaySoLanChet() => soLanChet;
+    // Dùng bởi KillZone/BrickKillZone để kiểm tra trước khi gọi PlayerChet()
+    public static bool CoTheXuLyChet() => !dangXuLyChet;
+
+    public static int LaySoLanChet() => soLanChet;
     public int LayTongSoLanChetSession() => tongSoLanChetSession;
 
     public void ResetProgress()

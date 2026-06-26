@@ -213,8 +213,8 @@ public class SkinSelectManager : MonoBehaviour
         }
     }
 
-    private readonly MenuKeyHold holdTrai = new MenuKeyHold(KeyCode.A, KeyCode.LeftArrow);
-    private readonly MenuKeyHold holdPhai = new MenuKeyHold(KeyCode.D, KeyCode.RightArrow);
+    private readonly MenuKeyHold holdTrai = new MenuKeyHold(UnityEngine.InputSystem.Key.A, UnityEngine.InputSystem.Key.LeftArrow);
+    private readonly MenuKeyHold holdPhai = new MenuKeyHold(UnityEngine.InputSystem.Key.D, UnityEngine.InputSystem.Key.RightArrow);
 
     void Update()
     {
@@ -223,9 +223,8 @@ public class SkinSelectManager : MonoBehaviour
         float dt    = Time.unscaledDeltaTime;
         bool diTrai = holdTrai.Update(dt);
         bool diPhai = holdPhai.Update(dt);
-        bool ok     = Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)
-                   || Input.GetKeyDown(KeyCode.Space);
-        bool back   = Input.GetKeyDown(KeyCode.Escape);
+        bool ok     = GameInput.instance != null && GameInput.instance.ConfirmDown;
+        bool back   = GameInput.instance != null && GameInput.instance.EscapeDown;
 
         if (diTrai) NutTrai();
         if (diPhai) NutPhai();

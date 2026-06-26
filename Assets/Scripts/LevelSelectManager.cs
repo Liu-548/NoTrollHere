@@ -104,10 +104,10 @@ public class LevelSelectManager : MonoBehaviour
     // === KEYBOARD NAVIGATION ===
     private int nutLevelDangChon = -1;
     private const int SO_COT = 4; // 4 cột trong grid
-    private readonly MenuKeyHold holdTrai  = new MenuKeyHold(KeyCode.A, KeyCode.LeftArrow);
-    private readonly MenuKeyHold holdPhai  = new MenuKeyHold(KeyCode.D, KeyCode.RightArrow);
-    private readonly MenuKeyHold holdLen   = new MenuKeyHold(KeyCode.W, KeyCode.UpArrow);
-    private readonly MenuKeyHold holdXuong = new MenuKeyHold(KeyCode.S, KeyCode.DownArrow);
+    private readonly MenuKeyHold holdTrai  = new MenuKeyHold(UnityEngine.InputSystem.Key.A, UnityEngine.InputSystem.Key.LeftArrow);
+    private readonly MenuKeyHold holdPhai  = new MenuKeyHold(UnityEngine.InputSystem.Key.D, UnityEngine.InputSystem.Key.RightArrow);
+    private readonly MenuKeyHold holdLen   = new MenuKeyHold(UnityEngine.InputSystem.Key.W, UnityEngine.InputSystem.Key.UpArrow);
+    private readonly MenuKeyHold holdXuong = new MenuKeyHold(UnityEngine.InputSystem.Key.S, UnityEngine.InputSystem.Key.DownArrow);
 
     // Chapter cao nhất có trong build — đọc từ GameManager, fallback = 2
     private int chuongToiDa => GameManager.instance != null ? GameManager.instance.chuongToiDa : 2;
@@ -270,7 +270,11 @@ public class LevelSelectManager : MonoBehaviour
     void GanOnClick(Button btn, string tenLevel)
     {
         btn.onClick.RemoveAllListeners();
-        btn.onClick.AddListener(() => SceneManager.LoadScene(tenLevel));
+        btn.onClick.AddListener(() =>
+        {
+            GameManager.ResetSoLanChet();
+            SceneManager.LoadScene(tenLevel);
+        });
     }
 
     void CapNhatMuiTen(int idx)
@@ -571,17 +575,19 @@ public class LevelSelectManager : MonoBehaviour
         // Dropdown đang mở — đóng khi nhấn phím nav
         if (panelDropdown != null && panelDropdown.activeSelf)
         {
-            bool anyNav = Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D)
-                       || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.S)
-                       || Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow)
-                       || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow)
-                       || Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Return)
-                       || Input.GetKeyDown(KeyCode.Space);
+            var kb = UnityEngine.InputSystem.Keyboard.current;
+            bool anyNav = kb != null && (
+                kb.aKey.wasPressedThisFrame || kb.dKey.wasPressedThisFrame
+                || kb.wKey.wasPressedThisFrame || kb.sKey.wasPressedThisFrame
+                || kb.leftArrowKey.wasPressedThisFrame || kb.rightArrowKey.wasPressedThisFrame
+                || kb.upArrowKey.wasPressedThisFrame || kb.downArrowKey.wasPressedThisFrame
+                || kb.escapeKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame
+                || kb.spaceKey.wasPressedThisFrame);
             if (anyNav) DongDropdown();
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (GameInput.instance != null && GameInput.instance.EscapeDown)
         {
             MenuSelectionFrame.An();
             NutBack();
@@ -593,8 +599,7 @@ public class LevelSelectManager : MonoBehaviour
         bool diPhai  = holdPhai.Update(dt);
         bool diLen   = holdLen.Update(dt);
         bool diXuong = holdXuong.Update(dt);
-        bool ok      = Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)
-                    || Input.GetKeyDown(KeyCode.Space);
+        bool ok      = GameInput.instance != null && GameInput.instance.ConfirmDown;
 
         Button[] nutActive = LayNutLevelActive();
         int soNut = nutActive != null ? nutActive.Length : 0;

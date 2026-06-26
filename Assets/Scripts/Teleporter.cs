@@ -63,9 +63,16 @@ public class Teleporter : MonoBehaviour
 
     IEnumerator DichChuyen(GameObject player)
     {
-        // Tắt input player
+        // Tắt input và đóng băng ngay lập tức (không trượt thêm trong khi fade)
         PlayerController pc = player.GetComponent<PlayerController>();
         if (pc != null) pc.enabled = false;
+
+        Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero;
+            rb.gravityScale   = 0f; // không rơi trong khi fade
+        }
 
         // Fade to black
         float alpha = 0f;
@@ -78,8 +85,6 @@ public class Teleporter : MonoBehaviour
         }
 
         // Teleport
-        Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
-        if (rb != null) rb.linearVelocity = Vector2.zero;
         player.transform.position = diemDen.position;
         yield return new WaitForFixedUpdate();
 
@@ -92,7 +97,8 @@ public class Teleporter : MonoBehaviour
             yield return null;
         }
 
-        // Bật lại input
+        // Bật lại input (PlayerController.CapNhatTrongLuc sẽ restore gravityScale)
+        if (rb != null) rb.gravityScale = 1f;
         if (pc != null) pc.enabled = true;
         dangDichChuyen = false;
     }

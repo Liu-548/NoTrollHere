@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <rect width="400" height="400" rx="48" fill="#0f0f1e"/>
+
+  <text x="200" y="130"
+    font-family="'Arial Black', Impact, sans-serif"
+    font-size="72" font-weight="900"
+    text-anchor="middle" fill="#ffffff"
+    letter-spacing="2">No</text>
+
+  <text x="200" y="240"
+    font-family="'Arial Black', Impact, sans-serif"
+    font-size="88" font-weight="900"
+    text-anchor="middle" fill="#f0a800"
+    letter-spacing="2">TROLL</text>
+
+  <text x="200" y="318"
+    font-family="'Arial Black', Impact, sans-serif"
+    font-size="58" font-weight="900"
+    text-anchor="middle" fill="#ffffff"
+    letter-spacing="6">Here</text>
+
+  <rect x="80" y="252" width="240" height="5" rx="2" fill="#f0a800" opacity="0.45"/>
+</svg>

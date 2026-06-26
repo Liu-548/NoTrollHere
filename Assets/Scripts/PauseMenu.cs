@@ -30,8 +30,8 @@ public class PauseMenu : MonoBehaviour
     // === KEYBOARD NAVIGATION ===
     private Button[] cacNutPauseCache;
     private int nutPauseDangChon = -1;
-    private readonly MenuKeyHold holdLen   = new MenuKeyHold(KeyCode.W, KeyCode.UpArrow);
-    private readonly MenuKeyHold holdXuong = new MenuKeyHold(KeyCode.S, KeyCode.DownArrow);
+    private readonly MenuKeyHold holdLen   = new MenuKeyHold(UnityEngine.InputSystem.Key.W, UnityEngine.InputSystem.Key.UpArrow);
+    private readonly MenuKeyHold holdXuong = new MenuKeyHold(UnityEngine.InputSystem.Key.S, UnityEngine.InputSystem.Key.DownArrow);
 
     // === PLAYER FREEZE ===
     private PlayerController cachedPlayer;
@@ -90,8 +90,7 @@ public class PauseMenu : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.P)
-            || Input.GetMouseButtonDown(1))
+        if (GameInput.instance != null && GameInput.instance.PausePressed)
         {
             NutTogglePause();
             return;
@@ -103,8 +102,7 @@ public class PauseMenu : MonoBehaviour
         float dt     = Time.unscaledDeltaTime;   // timeScale = 0 khi pause
         bool diLen   = holdLen.Update(dt);
         bool diXuong = holdXuong.Update(dt);
-        bool ok      = Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)
-                    || Input.GetKeyDown(KeyCode.Space);
+        bool ok      = GameInput.instance != null && GameInput.instance.ConfirmDown;
 
         if (diLen || diXuong)
         {
@@ -239,8 +237,11 @@ public class PauseMenu : MonoBehaviour
         if (cachedPlayer != null) cachedPlayer.enabled = false;
 
         if (txtDeathInfo != null)
+        {
+            int soLanChet = GameManager.LaySoLanChet();
             txtDeathInfo.text = "you've died <color=#F5C842>" +
-                soLanChetManNay + "</color> times on this level";
+                soLanChet + "</color> times on this level";
+        }
 
         // Đưa Btn_Pause lên trên panelPause để vẫn click được khi panel đang mở
         if (nutPauseHUD != null)

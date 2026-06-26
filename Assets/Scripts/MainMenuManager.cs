@@ -21,8 +21,8 @@ public class MainMenuManager : MonoBehaviour
     private int nutDangChon = -1;
     private static readonly string[] TEN_NUT_MENU =
         { "Btn_Play", "Btn_LevelSelect", "Btn_Skins", "Btn_Achievements", "Btn_Settings" };
-    private readonly MenuKeyHold holdLen   = new MenuKeyHold(KeyCode.W, KeyCode.UpArrow);
-    private readonly MenuKeyHold holdXuong = new MenuKeyHold(KeyCode.S, KeyCode.DownArrow);
+    private readonly MenuKeyHold holdLen   = new MenuKeyHold(UnityEngine.InputSystem.Key.W, UnityEngine.InputSystem.Key.UpArrow);
+    private readonly MenuKeyHold holdXuong = new MenuKeyHold(UnityEngine.InputSystem.Key.S, UnityEngine.InputSystem.Key.DownArrow);
 
     void Start()
     {
@@ -75,7 +75,7 @@ public class MainMenuManager : MonoBehaviour
         SettingsMenu sm = SettingsMenu.instance;
         bool settingsMo = sm != null && sm.panelSettings != null && sm.panelSettings.activeSelf;
 
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (GameInput.instance != null && GameInput.instance.EscapeDown)
         {
             if (settingsMo) sm.NutDongSettings();
             nutDangChon = -1;
@@ -88,8 +88,7 @@ public class MainMenuManager : MonoBehaviour
         float dt     = Time.unscaledDeltaTime;
         bool diLen   = holdLen.Update(dt);
         bool diXuong = holdXuong.Update(dt);
-        bool ok      = Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)
-                    || Input.GetKeyDown(KeyCode.Space);
+        bool ok      = GameInput.instance != null && GameInput.instance.ConfirmDown;
 
         if (diLen || diXuong)
         {
@@ -128,6 +127,7 @@ public class MainMenuManager : MonoBehaviour
         bool daUnlock = PlayerPrefs.GetInt(levelMoiNhat + "_unlocked", 0) == 1;
         if (!daUnlock) levelMoiNhat = "Level_S_0";
 
+        GameManager.ResetSoLanChet();
         StartCoroutine(FadeOutRoi(() =>
             SceneManager.LoadScene(levelMoiNhat)));
     }

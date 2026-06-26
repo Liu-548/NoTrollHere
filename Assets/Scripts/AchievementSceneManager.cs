@@ -31,8 +31,8 @@ public class AchievementSceneManager : MonoBehaviour
     private List<RectTransform> cacItemRT = new List<RectTransform>();
     private int itemHienTai = -1;
     private ScrollRect scrollRect;
-    private readonly MenuKeyHold holdLen   = new MenuKeyHold(KeyCode.W, KeyCode.UpArrow);
-    private readonly MenuKeyHold holdXuong = new MenuKeyHold(KeyCode.S, KeyCode.DownArrow);
+    private readonly MenuKeyHold holdLen   = new MenuKeyHold(UnityEngine.InputSystem.Key.W, UnityEngine.InputSystem.Key.UpArrow);
+    private readonly MenuKeyHold holdXuong = new MenuKeyHold(UnityEngine.InputSystem.Key.S, UnityEngine.InputSystem.Key.DownArrow);
 
     void Start()
     {
@@ -216,7 +216,7 @@ public class AchievementSceneManager : MonoBehaviour
             CuonDenItem(itemHienTai);
         }
 
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (GameInput.instance != null && GameInput.instance.EscapeDown)
         {
             MenuSelectionFrame.An();
             NutBack();
